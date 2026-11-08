@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="{{ t.html_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ t.page_title }}</title>
+  <meta name="description" content="{{ t.meta_description }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/landing.css') }}">
+  <script src="{{ url_for('static', path='js/effects.js') }}" defer></script>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav__inner">
+      <a class="nav__brand" href="/">{{ t.brand }}</a>
+      <div class="nav__actions">
+        <a class="lang-switch" href="{{ request.url.include_query_params(lang=other_lang) }}" hreflang="{{ other_lang }}">{{ t.lang_switch }}</a>
+        <a class="btn btn--inverted btn--small" href="{{ app_url }}">{{ t.nav_open }}</a>
+      </div>
+    </div>
+  </header>
+
+  {% block content %}{% endblock %}
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <span>{{ t.footer_tagline }}</span>
+      <a class="lang-switch" href="{{ request.url.include_query_params(lang=other_lang) }}" hreflang="{{ other_lang }}">{{ t.lang_switch }}</a>
+    </div>
+  </footer>
+  <html lang="{{ t.html_lang }}" class="no-js">
+</body>
+</html>

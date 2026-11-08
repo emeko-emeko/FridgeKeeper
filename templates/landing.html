@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main>
+  <section class="hero canvas-dark">
+    <span class="blob blob--lime"></span>
+  <span class="blob blob--pink"></span>
+  <span class="blob blob--violet"></span>
+  <div class="container hero__inner">
+    <div class="container hero__inner">
+      <p class="eyebrow">{{ t.hero_eyebrow }}</p>
+      <h1 class="hero__title">
+        {{ t.hero_title_pre }} <span class="hl">{{ t.hero_title_hl }}</span> {{ t.hero_title_post }}
+      </h1>
+      <p class="hero__sub">{{ t.hero_sub }}</p>
+      <div class="hero__actions">
+        <a class="btn btn--inverted" href="{{ app_url }}">{{ t.cta_primary }}</a>
+        <a class="btn btn--ghost" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.cta_secondary }}</a>
+      </div>
+      <div class="fridge" aria-hidden="true">
+        <div class="fridge__shelf">
+          <span class="fridge__item fridge__item--ok"></span>
+          <span class="fridge__item fridge__item--soon"></span>
+          <span class="fridge__item fridge__item--ok"></span>
+        </div>
+        <div class="fridge__shelf">
+          <span class="fridge__item fridge__item--ok"></span>
+          <span class="fridge__item fridge__item--ok"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section canvas-light">
+    <div class="container">
+      <p class="eyebrow eyebrow--dark">{{ t.problems_eyebrow }}</p>
+      <h2 class="section__title">{{ t.problems_title }}</h2>
+      <div class="grid grid--3">
+        <article class="card">
+          <h3 class="card__title">{{ t.problem1_title }}</h3>
+          <p class="card__text">{{ t.problem1_text }}</p>
+        </article>
+        <article class="card">
+          <h3 class="card__title">{{ t.problem2_title }}</h3>
+          <p class="card__text">{{ t.problem2_text }}</p>
+        </article>
+        <article class="card">
+          <h3 class="card__title">{{ t.problem3_title }}</h3>
+          <p class="card__text">{{ t.problem3_text }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section canvas-dark">
+    <div class="container">
+      <p class="eyebrow">{{ t.goal_eyebrow }}</p>
+      <h2 class="section__title section__title--on-dark">{{ t.goal_title }}</h2>
+      <p class="section__lead">{{ t.goal_text }}</p>
+    </div>
+  </section>
+
+  <section class="section canvas-light">
+    <div class="container">
+      <p class="eyebrow eyebrow--dark">{{ t.steps_eyebrow }}</p>
+      <h2 class="section__title">{{ t.steps_title }}</h2>
+      <ol class="grid grid--3 steps">
+        <li class="card">
+          <span class="step__num">01</span>
+          <h3 class="card__title">{{ t.step1_title }}</h3>
+          <p class="card__text">{{ t.step1_text }}</p>
+        </li>
+        <li class="card">
+          <span class="step__num">02</span>
+          <h3 class="card__title">{{ t.step2_title }}</h3>
+          <p class="card__text">{{ t.step2_text }}</p>
+        </li>
+        <li class="card">
+          <span class="step__num">03</span>
+          <h3 class="card__title">{{ t.step3_title }}</h3>
+          <p class="card__text">{{ t.step3_text }}</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section canvas-dark">
+  <div class="container feature-layout">
+    <div>
+      <p class="eyebrow">{{ t.connected_eyebrow }}</p>
+      <h2 class="section__title section__title--on-dark">{{ t.connected_title }}</h2>
+      <p class="section__lead">{{ t.connected_text }}</p>
+    </div>
+    <ul class="feature-list">
+      <li class="feature-item is-active">
+        <span class="feature-item__title">{{ t.feature1_title }}</span>
+        <p>{{ t.feature1_text }}</p>
+      </li>
+      <li class="feature-item">
+        <span class="feature-item__title">{{ t.feature2_title }}</span>
+        <p>{{ t.feature2_text }}</p>
+      </li>
+      <li class="feature-item">
+        <span class="feature-item__title">{{ t.feature3_title }}</span>
+        <p>{{ t.feature3_text }}</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+  <section class="section section--final canvas-dark">
+    <div class="container section--final__inner">
+      <h2 class="section__title section__title--on-dark">{{ t.final_title }}</h2>
+      <span class="blob blob--lime"></span>
+  <span class="blob blob--pink"></span>
+  <div class="container section--final__inner">
+      <div class="hero__actions">
+        <a class="btn btn--inverted" href="{{ app_url }}">{{ t.cta_primary }}</a>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

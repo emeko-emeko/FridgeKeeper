@@ -1,0 +1,65 @@
+from fastapi.testclient import TestClient
+
+from app import app
+from core.i18n import TEXTS
+
+client = TestClient(app)
+
+
+def test_landing_defaults_to_russian():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert '<html lang="ru">' in response.text
+    assert "Контролируйте" in response.text
+
+
+def test_query_switches_to_english_and_sets_cookie():
+    response = client.get("/?lang=en")
+    assert response.status_code == 200
+    assert '<html lang="en">' in response.text
+    assert "Keep track of" in response.text
+    assert "lang=en" in response.headers.get("set-cookie", "")
+
+
+def test_cookie_keeps_language_between_requests():
+    client.get("/?lang=en")
+    response = client.get("/")
+    assert '<html lang="en">' in response.text
+
+
+def test_accept_language_is_used_without_cookie():
+    response = TestClient(app).get("/", headers={"accept-language": "en-US,en;q=0.9"})
+    assert '<html lang="en">' in response.text
+
+
+def test_unknown_language_falls_back_to_russian_without_cookie():
+    response = TestClient(app).get("/?lang=fr")
+    assert '<html lang="ru">' in response.text
+    assert "set-cookie" not in response.headers
+
+
+def test_language_toggle_points_to_other_language():
+    ru_page = TestClient(app).get("/").text
+    assert 'href="http://testserver/?lang=en"' in ru_page
+    en_page = TestClient(app).get("/?lang=en").text
+    assert 'href="http://testserver/?lang=ru"' in en_page
+
+
+def test_app_placeholder_page_renders_in_both_languages():
+    ru = client.get("/app?lang=ru")
+    en = client.get("/app?lang=en")
+    assert ru.status_code == 200 and en.status_code == 200
+    assert TEXTS["ru"]["app_title"] in ru.text
+    assert TEXTS["en"]["app_title"] in en.text
+
+
+def test_static_stylesheet_is_served():
+    response = client.get("/static/css/landing.css")
+    assert response.status_code == 200
+    assert "--color-accent-lime" in response.text
+
+
+def test_both_languages_have_the_same_keys():
+    assert set(TEXTS["ru"]) == set(TEXTS["en"])
+    for key, value in TEXTS["en"].items():
+        assert value.strip(), f"empty English text for {key}"
