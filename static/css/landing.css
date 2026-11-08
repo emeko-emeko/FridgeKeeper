@@ -915,3 +915,419 @@ button:focus-visible {
     transition: none !important;
   }
 }
+
+/* =========================================================
+   ШАПКА: стеклянный фон, анимированная линия, логотип
+   ========================================================= */
+
+.nav {
+  background: rgba(31, 22, 51, 0.72);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 0;
+  transition: box-shadow 0.3s ease;
+}
+
+.nav::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-accent-pink), var(--color-accent-lime), transparent);
+  background-size: 200% 100%;
+  animation: nav-line 6s linear infinite;
+  opacity: 0.85;
+}
+
+.nav.is-scrolled {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+}
+
+.nav__brand .logo {
+  color: #ffffff;
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.nav__brand:hover .logo {
+  transform: rotate(-6deg) scale(1.08);
+}
+
+.logo__lock {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.nav__brand:hover .logo__lock {
+  animation: lock-wiggle 0.5s ease;
+}
+
+@keyframes nav-line {
+  from { background-position: 0% 0; }
+  to   { background-position: 200% 0; }
+}
+
+@keyframes lock-wiggle {
+  0%, 100% { transform: rotate(0); }
+  25%      { transform: rotate(-12deg); }
+  60%      { transform: rotate(8deg); }
+}
+
+/* =========================================================
+   СЕКЦИЯ «ПРОБЛЕМА»: насыщенный градиент, этикетка молока
+   ========================================================= */
+
+.problem {
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  padding: var(--space-section) 0;
+  background:
+    radial-gradient(900px 500px at 85% 15%, rgba(250, 127, 170, 0.45), transparent 60%),
+    radial-gradient(700px 500px at 5% 95%, rgba(194, 239, 78, 0.22), transparent 60%),
+    linear-gradient(135deg, #2b1257 0%, #5c1d6e 55%, #1f1633 100%);
+}
+
+.problem .eyebrow {
+  color: var(--color-accent-lime);
+}
+
+.problem__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-section);
+  align-items: center;
+}
+
+.problem-list {
+  display: grid;
+  gap: var(--space-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.problem-list li {
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  cursor: default;
+}
+
+.problem-list li.is-hot {
+  background: rgba(250, 127, 170, 0.18);
+  border-color: var(--color-accent-pink);
+  transform: translateX(8px);
+}
+
+.problem-list h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-ui);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.problem-list p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.label-wrap {
+  display: flex;
+  justify-content: center;
+  perspective: 1200px;
+}
+
+.milk-label {
+  position: relative;
+  width: min(100%, 340px);
+  padding: 24px;
+  border-radius: 18px;
+  background: #ffffff;
+  color: var(--color-ink-deep);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+  transform: rotateY(-8deg) rotateX(4deg);
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  animation: label-float 6s ease-in-out infinite;
+}
+
+.milk-label:hover {
+  transform: rotateY(0) rotateX(0);
+}
+
+.milk-label__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b4458;
+}
+
+.milk-label__logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-primary);
+  background: var(--color-accent-lime);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.milk-label__name {
+  margin: 16px 0 12px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1.15;
+}
+
+.milk-label__facts {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #4b4458;
+}
+
+.milk-label__facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.milk-label__facts dd {
+  margin: 0;
+  text-align: right;
+}
+
+.milk-label__row {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: #f6f4fa;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.milk-label__row span {
+  font-size: 14px;
+  color: #4b4458;
+}
+
+.milk-label__row strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.milk-label__row.is-hot {
+  background: rgba(250, 127, 170, 0.18);
+  border-color: var(--color-accent-pink);
+}
+
+.milk-label__row.is-hot strong {
+  color: #c2185b;
+}
+
+.milk-label__row.is-hot::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent-pink);
+  animation: dot-pulse 1.6s ease-out infinite;
+}
+
+@keyframes label-float {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -10px; }
+}
+
+@keyframes dot-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(250, 127, 170, 0.7); }
+  100% { box-shadow: 0 0 0 10px rgba(250, 127, 170, 0); }
+}
+
+/* =========================================================
+   СЕКЦИЯ «КАК ЭТО РАБОТАЕТ»: мини-холодильник
+   ========================================================= */
+
+.steps-section {
+  background: #ffffff;
+  padding: var(--space-section) 0;
+}
+
+.steps-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-section);
+  align-items: center;
+}
+
+.step-panel {
+  display: none;
+}
+
+.step-panel.is-active {
+  display: block;
+  animation: panel-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.step-panel .card__title {
+  font-size: 28px;
+  margin-top: var(--space-md);
+}
+
+.step-panel p {
+  margin: var(--space-md) 0 0;
+  max-width: 46ch;
+  font-size: 18px;
+  line-height: 1.7;
+  color: #4b4458;
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.mini-fridge {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 28px;
+  background: linear-gradient(160deg, #2b1257, #1f1633 60%);
+  box-shadow: 0 30px 60px -20px rgba(31, 22, 51, 0.6);
+}
+
+.mf-zone {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--color-hairline-violet);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  text-align: left;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.mf-zone:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.mf-zone[aria-pressed="true"] {
+  border-color: var(--color-accent-lime);
+  background: rgba(194, 239, 78, 0.08);
+  box-shadow: 0 0 0 1px var(--color-accent-lime), 0 0 30px rgba(194, 239, 78, 0.25);
+}
+
+.mf-zone__label {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--color-accent-lime);
+}
+
+.mf-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mf-item {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+}
+
+.mf-item--soon {
+  border: 1px solid var(--color-accent-pink);
+  box-shadow: 0 0 14px rgba(250, 127, 170, 0.4);
+  animation: item-pulse 2.4s ease-in-out infinite;
+}
+
+.mf-date {
+  margin-left: 6px;
+  font-style: normal;
+  font-size: 12px;
+  color: var(--color-accent-pink);
+}
+
+/* =========================================================
+   Адаптив для новых секций
+   ========================================================= */
+
+@media (max-width: 992px) {
+  .problem__inner,
+  .steps-wrap {
+    grid-template-columns: 1fr;
+    gap: var(--space-xxl);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .milk-label,
+  .milk-label__row.is-hot::after,
+  .mf-item--soon,
+  .nav::after,
+  .nav__brand:hover .logo__lock {
+    animation: none !important;
+  }
+  .milk-label {
+    transform: none;
+  }
+  .problem-list li,
+  .mf-zone,
+  .nav__brand .logo {
+    transition: none !important;
+  }
+}
+/* Центрированный hero */
+.hero--center .hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero--center .hero__title {
+  margin: 0 auto;
+  max-width: 20ch;
+}
+
+.hero--center .hero__sub {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero--center .hero__actions {
+  justify-content: center;
+}
+
+.hero--center .eyebrow {
+  margin-bottom: var(--space-lg);
+}

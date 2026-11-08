@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+
 <main>
-  <section class="hero canvas-dark">
+  <section class="hero hero--center canvas-dark">
     <span class="blob blob--lime"></span>
-  <span class="blob blob--pink"></span>
-  <span class="blob blob--violet"></span>
-  <div class="container hero__inner">
+    <span class="blob blob--pink"></span>
+    <span class="blob blob--violet"></span>
     <div class="container hero__inner">
       <p class="eyebrow">{{ t.hero_eyebrow }}</p>
       <h1 class="hero__title">
@@ -31,22 +32,47 @@
     </div>
   </section>
 
-  <section class="section canvas-light">
-    <div class="container">
-      <p class="eyebrow eyebrow--dark">{{ t.problems_eyebrow }}</p>
-      <h2 class="section__title">{{ t.problems_title }}</h2>
-      <div class="grid grid--3">
-        <article class="card">
-          <h3 class="card__title">{{ t.problem1_title }}</h3>
-          <p class="card__text">{{ t.problem1_text }}</p>
-        </article>
-        <article class="card">
-          <h3 class="card__title">{{ t.problem2_title }}</h3>
-          <p class="card__text">{{ t.problem2_text }}</p>
-        </article>
-        <article class="card">
-          <h3 class="card__title">{{ t.problem3_title }}</h3>
-          <p class="card__text">{{ t.problem3_text }}</p>
+  <section class="section problem">
+    <div class="container problem__inner">
+      <div class="problem__text">
+        <p class="eyebrow">Проблема</p>
+        <h2 class="section__title section__title--on-dark">Почему еда портится дома</h2>
+        <ul class="problem-list">
+          <li data-spot="1">
+            <h3>Слепые зоны холодильника</h3>
+            <p>Покупаем то, что уже есть, потому что забыли о продукте на задней полке.</p>
+          </li>
+          <li data-spot="2">
+            <h3>Нет контроля сроков</h3>
+            <p>Даты на упаковках легко пропустить, а автоматических напоминаний обычно нет.</p>
+          </li>
+          <li data-spot="3">
+            <h3>Меню без учёта остатков</h3>
+            <p>План еды строится спонтанно, и продукты, которые скоро испортятся, остаются нетронутыми.</p>
+          </li>
+        </ul>
+      </div>
+
+      <div class="label-wrap">
+        <article class="milk-label" data-active="1">
+          <header class="milk-label__head">
+            <span class="milk-label__logo">MOLOKO</span>
+            <span>1 л · 3,2%</span>
+          </header>
+          <h3 class="milk-label__name">Молоко пастеризованное</h3>
+          <dl class="milk-label__facts">
+            <div><dt>Состав</dt><dd>молоко коровье, стабилизатор</dd></div>
+            <div><dt>Энергия</dt><dd>64 ккал / 100 мл</dd></div>
+          </dl>
+          <div class="milk-label__row" data-spot-target="1">
+            <span>Открыт</span><strong>3 дня назад</strong>
+          </div>
+          <div class="milk-label__row" data-spot-target="2">
+            <span>Годен до</span><strong>14.11.2026</strong>
+          </div>
+          <div class="milk-label__row" data-spot-target="3">
+            <span>Остаток</span><strong>250 мл</strong>
+          </div>
         </article>
       </div>
     </div>
@@ -60,64 +86,90 @@
     </div>
   </section>
 
-  <section class="section canvas-light">
-    <div class="container">
-      <p class="eyebrow eyebrow--dark">{{ t.steps_eyebrow }}</p>
-      <h2 class="section__title">{{ t.steps_title }}</h2>
-      <ol class="grid grid--3 steps">
-        <li class="card">
-          <span class="step__num">01</span>
-          <h3 class="card__title">{{ t.step1_title }}</h3>
-          <p class="card__text">{{ t.step1_text }}</p>
-        </li>
-        <li class="card">
-          <span class="step__num">02</span>
-          <h3 class="card__title">{{ t.step2_title }}</h3>
-          <p class="card__text">{{ t.step2_text }}</p>
-        </li>
-        <li class="card">
-          <span class="step__num">03</span>
-          <h3 class="card__title">{{ t.step3_title }}</h3>
-          <p class="card__text">{{ t.step3_text }}</p>
-        </li>
-      </ol>
+  <section class="section steps-section">
+    <div class="container steps-wrap">
+      <div class="steps-text">
+        <p class="eyebrow eyebrow--dark">Как это работает</p>
+        <h2 class="section__title">Три шага без лишних действий</h2>
+        <div class="step-panels" aria-live="polite">
+          <article class="step-panel is-active" data-panel="1">
+            <span class="step__num">01</span>
+            <h3 class="card__title">Добавьте продукт</h3>
+            <p>Сфотографируйте этикетку или введите название вручную. Категорию и типичный срок хранения подставим сами.</p>
+          </article>
+          <article class="step-panel" data-panel="2">
+            <span class="step__num">02</span>
+            <h3 class="card__title">Мы следим за сроком</h3>
+            <p>Дата «Годен до» сохраняется, а бот напоминает за пару дней до истечения.</p>
+          </article>
+          <article class="step-panel" data-panel="3">
+            <span class="step__num">03</span>
+            <h3 class="card__title">Планируйте по остаткам</h3>
+            <p>Смотрите, что нужно съесть первым, и не покупайте лишнего.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="mini-fridge">
+        <button class="mf-zone" data-step="1" aria-pressed="true">
+          <span class="mf-zone__label">01 · Добавить</span>
+          <span class="mf-items">
+            <span class="mf-item">Молоко</span>
+            <span class="mf-item">Йогурт</span>
+          </span>
+        </button>
+        <button class="mf-zone" data-step="2" aria-pressed="false">
+          <span class="mf-zone__label">02 · Срок</span>
+          <span class="mf-items">
+            <span class="mf-item mf-item--soon">Сыр<em class="mf-date">2 дн</em></span>
+            <span class="mf-item">Творог</span>
+          </span>
+        </button>
+        <button class="mf-zone" data-step="3" aria-pressed="false">
+          <span class="mf-zone__label">03 · Остатки</span>
+          <span class="mf-items">
+            <span class="mf-item">Хлеб</span>
+            <span class="mf-item">Яйца · 4 шт</span>
+          </span>
+        </button>
+      </div>
     </div>
   </section>
 
   <section class="section canvas-dark">
-  <div class="container feature-layout">
-    <div>
-      <p class="eyebrow">{{ t.connected_eyebrow }}</p>
-      <h2 class="section__title section__title--on-dark">{{ t.connected_title }}</h2>
-      <p class="section__lead">{{ t.connected_text }}</p>
+    <div class="container feature-layout">
+      <div>
+        <p class="eyebrow">{{ t.connected_eyebrow }}</p>
+        <h2 class="section__title section__title--on-dark">{{ t.connected_title }}</h2>
+        <p class="section__lead">{{ t.connected_text }}</p>
+      </div>
+      <ul class="feature-list">
+        <li class="feature-item is-active">
+          <span class="feature-item__title">{{ t.feature1_title }}</span>
+          <p>{{ t.feature1_text }}</p>
+        </li>
+        <li class="feature-item">
+          <span class="feature-item__title">{{ t.feature2_title }}</span>
+          <p>{{ t.feature2_text }}</p>
+        </li>
+        <li class="feature-item">
+          <span class="feature-item__title">{{ t.feature3_title }}</span>
+          <p>{{ t.feature3_text }}</p>
+        </li>
+      </ul>
     </div>
-    <ul class="feature-list">
-      <li class="feature-item is-active">
-        <span class="feature-item__title">{{ t.feature1_title }}</span>
-        <p>{{ t.feature1_text }}</p>
-      </li>
-      <li class="feature-item">
-        <span class="feature-item__title">{{ t.feature2_title }}</span>
-        <p>{{ t.feature2_text }}</p>
-      </li>
-      <li class="feature-item">
-        <span class="feature-item__title">{{ t.feature3_title }}</span>
-        <p>{{ t.feature3_text }}</p>
-      </li>
-    </ul>
-  </div>
-</section>
+  </section>
 
   <section class="section section--final canvas-dark">
+    <span class="blob blob--lime"></span>
+    <span class="blob blob--pink"></span>
     <div class="container section--final__inner">
       <h2 class="section__title section__title--on-dark">{{ t.final_title }}</h2>
-      <span class="blob blob--lime"></span>
-  <span class="blob blob--pink"></span>
-  <div class="container section--final__inner">
       <div class="hero__actions">
         <a class="btn btn--inverted" href="{{ app_url }}">{{ t.cta_primary }}</a>
       </div>
     </div>
   </section>
 </main>
+
 {% endblock %}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ t.html_lang }}">
+<html lang="{{ t.html_lang }}" class="no-js">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,19 @@
 <body>
   <header class="nav">
     <div class="container nav__inner">
-      <a class="nav__brand" href="/">{{ t.brand }}</a>
+      <a class="nav__brand" href="/">
+        <svg class="logo" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+          <rect x="6" y="2" width="20" height="28" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="6" y1="12" x2="26" y2="12" stroke="currentColor" stroke-width="2.5"/>
+          <line x1="10" y1="6" x2="10" y2="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="10" y1="16" x2="10" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <g class="logo__lock">
+            <rect x="18" y="20" width="9" height="7" rx="1.8" fill="#c2ef4e"/>
+            <path d="M20 20v-2.5a2.5 2.5 0 0 1 5 0V20" fill="none" stroke="#c2ef4e" stroke-width="2"/>
+          </g>
+        </svg>
+        <span>{{ t.brand }}</span>
+      </a>
       <div class="nav__actions">
         <a class="lang-switch" href="{{ request.url.include_query_params(lang=other_lang) }}" hreflang="{{ other_lang }}">{{ t.lang_switch }}</a>
         <a class="btn btn--inverted btn--small" href="{{ app_url }}">{{ t.nav_open }}</a>
@@ -30,6 +42,5 @@
       <a class="lang-switch" href="{{ request.url.include_query_params(lang=other_lang) }}" hreflang="{{ other_lang }}">{{ t.lang_switch }}</a>
     </div>
   </footer>
-  <html lang="{{ t.html_lang }}" class="no-js">
 </body>
 </html>

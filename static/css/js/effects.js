@@ -37,6 +37,39 @@
       requestAnimationFrame(() => setTimeout(() => parent.classList.add("is-visible"), 300));
     }
   }
+    // 7. Шапка: тень при прокрутке
+  const nav = document.querySelector(".nav");
+  if (nav) {
+    const onScroll = () => nav.classList.toggle("is-scrolled", window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
+  // 8. Проблемы <-> этикетка: подсветка связанных элементов
+  const label = document.querySelector(".milk-label");
+  if (label) {
+    const items = document.querySelectorAll(".problem-list li");
+    const rows = label.querySelectorAll("[data-spot-target]");
+    const setSpot = (n) => {
+      label.dataset.active = n;
+      items.forEach((li) => li.classList.toggle("is-hot", li.dataset.spot === n));
+      rows.forEach((r) => r.classList.toggle("is-hot", r.dataset.spotTarget === n));
+    };
+    items.forEach((li) => li.addEventListener("pointerenter", () => setSpot(li.dataset.spot)));
+    rows.forEach((r) => r.addEventListener("pointerenter", () => setSpot(r.dataset.spotTarget)));
+    setSpot("1");
+  }
+
+  // 9. Мини-холодильник: клик по зоне показывает инструкцию
+  const zones = document.querySelectorAll(".mf-zone");
+  const panels = document.querySelectorAll(".step-panel");
+  if (zones.length) {
+    const showStep = (n) => {
+      zones.forEach((z) => z.setAttribute("aria-pressed", String(z.dataset.step === n)));
+      panels.forEach((p) => p.classList.toggle("is-active", p.dataset.panel === n));
+    };
+    zones.forEach((z) => z.addEventListener("click", () => showStep(z.dataset.step)));
+  }
 
   if (reduceMotion) return;
 
