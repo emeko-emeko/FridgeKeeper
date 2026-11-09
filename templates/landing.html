@@ -1,175 +1,189 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-
 <main>
-  <section class="hero hero--center canvas-dark">
-    <span class="blob blob--lime"></span>
-    <span class="blob blob--pink"></span>
-    <span class="blob blob--violet"></span>
-    <div class="container hero__inner">
+
+  <!-- HERO -->
+  <!-- HERO -->
+<section class="hero">
+  <div class="container hero__grid">
+    <div class="rise">
       <p class="eyebrow">{{ t.hero_eyebrow }}</p>
       <h1 class="hero__title">
-        {{ t.hero_title_pre }} <span class="hl">{{ t.hero_title_hl }}</span> {{ t.hero_title_post }}
+        {{ t.hero_title_pre }} <span class="hl">{{ t.hero_title_hl }}</span>{{ t.hero_title_post }}
       </h1>
       <p class="hero__sub">{{ t.hero_sub }}</p>
       <div class="hero__actions">
-        <a class="btn btn--inverted" href="{{ app_url }}">{{ t.cta_primary }}</a>
+        <a class="btn btn--primary" href="{{ app_url }}">{{ t.cta_primary }}</a>
         <a class="btn btn--ghost" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.cta_secondary }}</a>
       </div>
-      <div class="fridge" aria-hidden="true">
-        <div class="fridge__shelf">
-          <span class="fridge__item fridge__item--ok"></span>
-          <span class="fridge__item fridge__item--soon"></span>
-          <span class="fridge__item fridge__item--ok"></span>
+    </div>
+
+    <figure class="fridge rise rise--2" aria-label="{{ t.hero_preview_label }}">
+  <button class="fridge__door" type="button" aria-expanded="false" aria-label="{{ t.hero_preview_label }}">
+    <span class="fridge__handle"></span>
+  </button>
+  <div class="fridge__body">
+    <p class="fridge__note">{{ t.hero_preview_hint }}</p>
+    <div class="fridge__head">
+      <span class="fridge__title">{{ t.hero_preview_title }}</span>
+      <span class="fridge__count" data-count></span>
+    </div>
+
+    <div class="fridge__shelf">
+      <button class="item item--sticky" type="button" data-days="5" data-info="{{ t.info_milk }}">
+        <span class="item__dot"></span>
+        <span class="item__name">{{ t.prod_milk }}</span>
+        <span class="item__days"></span>
+      </button>
+      <button class="item" type="button" data-days="6" data-info="{{ t.info_yogurt }}">
+        <span class="item__dot"></span>
+        <span class="item__name">{{ t.prod_yogurt }}</span>
+        <span class="item__days"></span>
+      </button>
+      <button class="item" type="button" data-days="2" data-info="{{ t.info_cheese }}">
+        <span class="item__dot"></span>
+        <span class="item__name">{{ t.prod_cheese }}</span>
+        <span class="item__days"></span>
+      </button>
+    </div>
+
+    <div class="fridge__shelf">
+      <button class="item" type="button" data-days="1" data-info="{{ t.info_bread }}">
+        <span class="item__dot"></span>
+        <span class="item__name">{{ t.prod_bread }}</span>
+        <span class="item__days"></span>
+      </button>
+      <button class="item" type="button" data-days="9" data-info="{{ t.info_eggs }}">
+        <span class="item__dot"></span>
+        <span class="item__name">{{ t.prod_eggs }}</span>
+        <span class="item__days"></span>
+      </button>
+    </div>
+
+    <p class="fridge__info" data-info-line aria-live="polite">{{ t.hero_preview_default_info }}</p>
+  </div>
+</figure>
+  </div>
+</section>
+
+  <!-- ЦЕЛЬ -->
+  <section class="section">
+  <div class="container split">
+    <div class="label reveal">
+  <div class="label__head"><span>{{ t.connected_eyebrow }}</span></div>
+  <p class="label__name">{{ t.goal_title }}</p>
+  <div class="label__row"><span>{{ t.prod_milk }}</span><strong>{{ t.info_milk }}</strong></div>
+  <div class="label__row"><span>{{ t.prod_bread }}</span><strong>{{ t.info_bread }}</strong></div>
+</div>
+    <div class="reveal goal-text">
+      <p class="eyebrow">{{ t.goal_eyebrow }}</p>
+      <h2 class="section__title">{{ t.goal_title }}</h2>
+      <p class="section__lead">{{ t.goal_text }}</p>
+    </div>
+  </div>
+</section>
+
+  <!-- КАК ЭТО РАБОТАЕТ -->
+  <section class="section">
+    <div class="container split">
+      <div class="split__text">
+        <p class="eyebrow reveal">{{ t.steps_eyebrow }}</p>
+        <h2 class="section__title reveal">{{ t.steps_title }}</h2>
+        <div class="steps" aria-live="polite">
+          <article class="step is-active" data-panel="1">
+            <span class="step__num">01</span>
+            <h3>{{ t.step1_title }}</h3>
+            <p>{{ t.step1_text }}</p>
+          </article>
+          <article class="step" data-panel="2">
+            <span class="step__num">02</span>
+            <h3>{{ t.step2_title }}</h3>
+            <p>{{ t.step2_text }}</p>
+          </article>
+          <article class="step" data-panel="3">
+            <span class="step__num">03</span>
+            <h3>{{ t.step3_title }}</h3>
+            <p>{{ t.step3_text }}</p>
+          </article>
         </div>
-        <div class="fridge__shelf">
-          <span class="fridge__item fridge__item--ok"></span>
-          <span class="fridge__item fridge__item--ok"></span>
-        </div>
+      </div>
+
+      <div class="mini reveal">
+        <button class="mini__zone" type="button" data-step="1" aria-pressed="true">
+          <span class="mini__label">{{ t.mini_zone1 }}</span>
+          <span class="mini__items">
+            <span class="mini__item">{{ t.mini_milk }}</span>
+            <span class="mini__item">{{ t.mini_yogurt }}</span>
+          </span>
+        </button>
+        <button class="mini__zone" type="button" data-step="2" aria-pressed="false">
+          <span class="mini__label">{{ t.mini_zone2 }}</span>
+          <span class="mini__items">
+            <span class="mini__item mini__item--soon">{{ t.mini_cheese }}<em class="mini__date">{{ t.mini_days_soon }}</em></span>
+            <span class="mini__item">{{ t.mini_curd }}</span>
+          </span>
+        </button>
+        <button class="mini__zone" type="button" data-step="3" aria-pressed="false">
+          <span class="mini__label">{{ t.mini_zone3 }}</span>
+          <span class="mini__items">
+            <span class="mini__item">{{ t.mini_bread }}</span>
+            <span class="mini__item">{{ t.mini_eggs }}</span>
+          </span>
+        </button>
       </div>
     </div>
   </section>
 
-  <section class="section problem">
-    <div class="container problem__inner">
-      <div class="problem__text">
-        <p class="eyebrow">Проблема</p>
-        <h2 class="section__title section__title--on-dark">Почему еда портится дома</h2>
-        <ul class="problem-list">
-          <li data-spot="1">
-            <h3>Слепые зоны холодильника</h3>
-            <p>Покупаем то, что уже есть, потому что забыли о продукте на задней полке.</p>
+  <!-- ВСЁ СВЯЗАНО -->
+  <section class="section">
+    <div class="container split">
+      <div class="split__text">
+        <p class="eyebrow reveal">{{ t.connected_eyebrow }}</p>
+        <h2 class="section__title reveal">{{ t.connected_title }}</h2>
+        <p class="section__lead reveal">{{ t.connected_lead }}</p>
+        <ul class="features" role="tablist">
+          <li class="feature is-active" data-feature="1" tabindex="0" role="tab" aria-selected="true">
+            <span class="feature__title">{{ t.feature1_title }}</span>
+            <p>{{ t.feature1_text }}</p>
           </li>
-          <li data-spot="2">
-            <h3>Нет контроля сроков</h3>
-            <p>Даты на упаковках легко пропустить, а автоматических напоминаний обычно нет.</p>
+          <li class="feature" data-feature="2" tabindex="0" role="tab" aria-selected="false">
+            <span class="feature__title">{{ t.feature2_title }}</span>
+            <p>{{ t.feature2_text }}</p>
           </li>
-          <li data-spot="3">
-            <h3>Меню без учёта остатков</h3>
-            <p>План еды строится спонтанно, и продукты, которые скоро испортятся, остаются нетронутыми.</p>
+          <li class="feature" data-feature="3" tabindex="0" role="tab" aria-selected="false">
+            <span class="feature__title">{{ t.feature3_title }}</span>
+            <p>{{ t.feature3_text }}</p>
           </li>
         </ul>
       </div>
 
-      <div class="label-wrap">
-        <article class="milk-label" data-active="1">
-          <header class="milk-label__head">
-            <span class="milk-label__logo">MOLOKO</span>
-            <span>1 л · 3,2%</span>
-          </header>
-          <h3 class="milk-label__name">Молоко пастеризованное</h3>
-          <dl class="milk-label__facts">
-            <div><dt>Состав</dt><dd>молоко коровье, стабилизатор</dd></div>
-            <div><dt>Энергия</dt><dd>64 ккал / 100 мл</dd></div>
-          </dl>
-          <div class="milk-label__row" data-spot-target="1">
-            <span>Открыт</span><strong>3 дня назад</strong>
-          </div>
-          <div class="milk-label__row" data-spot-target="2">
-            <span>Годен до</span><strong>14.11.2026</strong>
-          </div>
-          <div class="milk-label__row" data-spot-target="3">
-            <span>Остаток</span><strong>250 мл</strong>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section canvas-dark">
-    <div class="container">
-      <p class="eyebrow">{{ t.goal_eyebrow }}</p>
-      <h2 class="section__title section__title--on-dark">{{ t.goal_title }}</h2>
-      <p class="section__lead">{{ t.goal_text }}</p>
-    </div>
-  </section>
-
-  <section class="section steps-section">
-    <div class="container steps-wrap">
-      <div class="steps-text">
-        <p class="eyebrow eyebrow--dark">Как это работает</p>
-        <h2 class="section__title">Три шага без лишних действий</h2>
-        <div class="step-panels" aria-live="polite">
-          <article class="step-panel is-active" data-panel="1">
-            <span class="step__num">01</span>
-            <h3 class="card__title">Добавьте продукт</h3>
-            <p>Сфотографируйте этикетку или введите название вручную. Категорию и типичный срок хранения подставим сами.</p>
-          </article>
-          <article class="step-panel" data-panel="2">
-            <span class="step__num">02</span>
-            <h3 class="card__title">Мы следим за сроком</h3>
-            <p>Дата «Годен до» сохраняется, а бот напоминает за пару дней до истечения.</p>
-          </article>
-          <article class="step-panel" data-panel="3">
-            <span class="step__num">03</span>
-            <h3 class="card__title">Планируйте по остаткам</h3>
-            <p>Смотрите, что нужно съесть первым, и не покупайте лишнего.</p>
-          </article>
+      <div class="preview reveal" aria-live="polite">
+        <div class="preview__panel is-on" data-fp="1">
+          <div class="row"><span>{{ t.fp1_a }}</span><strong>{{ t.fp1_a_val }}</strong></div>
+          <div class="row"><span>{{ t.fp1_b }}</span><strong>{{ t.fp1_b_val }}</strong></div>
+        </div>
+        <div class="preview__panel" data-fp="2">
+          <div class="row row--alert"><span>{{ t.fp2_a }}</span><strong>{{ t.fp2_a_val }}</strong></div>
+          <div class="row"><span>{{ t.fp2_b }}</span><strong>{{ t.fp2_b_val }}</strong></div>
+        </div>
+        <div class="preview__panel" data-fp="3">
+          <div class="row"><span>{{ t.fp3_a }}</span><strong>{{ t.fp3_a_val }}</strong></div>
+          <div class="row"><span>{{ t.fp3_b }}</span><strong>{{ t.fp3_b_val }}</strong></div>
         </div>
       </div>
+    </div>
+  </section>
 
-      <div class="mini-fridge">
-        <button class="mf-zone" data-step="1" aria-pressed="true">
-          <span class="mf-zone__label">01 · Добавить</span>
-          <span class="mf-items">
-            <span class="mf-item">Молоко</span>
-            <span class="mf-item">Йогурт</span>
-          </span>
-        </button>
-        <button class="mf-zone" data-step="2" aria-pressed="false">
-          <span class="mf-zone__label">02 · Срок</span>
-          <span class="mf-items">
-            <span class="mf-item mf-item--soon">Сыр<em class="mf-date">2 дн</em></span>
-            <span class="mf-item">Творог</span>
-          </span>
-        </button>
-        <button class="mf-zone" data-step="3" aria-pressed="false">
-          <span class="mf-zone__label">03 · Остатки</span>
-          <span class="mf-items">
-            <span class="mf-item">Хлеб</span>
-            <span class="mf-item">Яйца · 4 шт</span>
-          </span>
-        </button>
+  <!-- ФИНАЛ -->
+  <section class="section section--final">
+    <div class="container final">
+      <h2 class="section__title reveal">{{ t.final_title }}</h2>
+      <div class="hero__actions reveal">
+        <a class="btn btn--primary" href="{{ app_url }}">{{ t.cta_primary }}</a>
       </div>
     </div>
   </section>
 
-  <section class="section canvas-dark">
-    <div class="container feature-layout">
-      <div>
-        <p class="eyebrow">{{ t.connected_eyebrow }}</p>
-        <h2 class="section__title section__title--on-dark">{{ t.connected_title }}</h2>
-        <p class="section__lead">{{ t.connected_text }}</p>
-      </div>
-      <ul class="feature-list">
-        <li class="feature-item is-active">
-          <span class="feature-item__title">{{ t.feature1_title }}</span>
-          <p>{{ t.feature1_text }}</p>
-        </li>
-        <li class="feature-item">
-          <span class="feature-item__title">{{ t.feature2_title }}</span>
-          <p>{{ t.feature2_text }}</p>
-        </li>
-        <li class="feature-item">
-          <span class="feature-item__title">{{ t.feature3_title }}</span>
-          <p>{{ t.feature3_text }}</p>
-        </li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section section--final canvas-dark">
-    <span class="blob blob--lime"></span>
-    <span class="blob blob--pink"></span>
-    <div class="container section--final__inner">
-      <h2 class="section__title section__title--on-dark">{{ t.final_title }}</h2>
-      <div class="hero__actions">
-        <a class="btn btn--inverted" href="{{ app_url }}">{{ t.cta_primary }}</a>
-      </div>
-    </div>
-  </section>
 </main>
-
 {% endblock %}

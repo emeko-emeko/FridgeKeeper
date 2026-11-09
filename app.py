@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -13,6 +14,7 @@ from core.i18n import (
     APP_URL,
     DEFAULT_LANG,
     TELEGRAM_BOT_URL,
+    get_js_strings,
     get_texts,
     normalize_lang,
 )
@@ -46,8 +48,11 @@ def resolve_lang(request: Request) -> tuple[str, bool]:
 
 
 def render(request: Request, template: str, lang: str, save_lang: bool) -> HTMLResponse:
+    # JSON для скриптов демо; "<" экранируем, чтобы строки не закрыли тег <script>.
+    js_json = json.dumps(get_js_strings(lang), ensure_ascii=False).replace("<", "\\u003c")
     context = {
         "t": get_texts(lang),
+        "js_json": js_json,
         "lang": lang,
         "other_lang": "en" if lang == "ru" else "ru",
         "app_url": APP_URL,

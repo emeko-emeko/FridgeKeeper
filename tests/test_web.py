@@ -10,15 +10,44 @@ def test_landing_defaults_to_russian():
     response = client.get("/")
     assert response.status_code == 200
     assert '<html lang="ru">' in response.text
-    assert "Контролируйте" in response.text
+    assert TEXTS["ru"]["hero_title"] in response.text
 
 
 def test_query_switches_to_english_and_sets_cookie():
     response = client.get("/?lang=en")
     assert response.status_code == 200
     assert '<html lang="en">' in response.text
-    assert "Keep track of" in response.text
+    assert TEXTS["en"]["hero_title"] in response.text
     assert "lang=en" in response.headers.get("set-cookie", "")
+
+
+def test_english_page_has_no_cyrillic_outside_language_switch():
+    """Английская версия не должна содержать русских слов, кроме переключателя языка."""
+    import re
+
+    html = client.get("/?lang=en").text
+    html = html.replace(TEXTS["en"]["lang_switch"], "")  # «Русский» в переключателе
+    html = re.sub(r"<script[^>]*>.*?</script>", "", html, flags=re.S)  # скрипты, не текст
+    html = re.sub(r"<!--.*?-->", "", html, flags=re.S)  # комментарии в шаблонах, не текст
+    assert not re.search(r"[А-Яа-яЁё]", html), re.findall(r"[А-Яа-яЁё]+", html)[:5]
+
+
+def test_russian_page_has_no_english_leftovers_from_hero():
+    html = client.get("/").text
+    assert "Food Waste at Home" not in html
+    assert "Keep track of" not in html
+
+
+def test_demo_strings_are_passed_to_browser_in_current_language():
+    import json
+    import re
+
+    en = client.get("/?lang=en").text
+    match = re.search(r'<script id="i18n" type="application/json">(.*?)</script>', en, re.S)
+    assert match, "JSON строк для скриптов не найден"
+    strings = json.loads(match.group(1))
+    assert strings["js_count_fmt"] == TEXTS["en"]["js_count_fmt"]
+    assert strings["prod_milk"] == "Milk"
 
 
 def test_cookie_keeps_language_between_requests():
@@ -56,7 +85,7 @@ def test_app_placeholder_page_renders_in_both_languages():
 def test_static_stylesheet_is_served():
     response = client.get("/static/css/landing.css")
     assert response.status_code == 200
-    assert "--color-accent-lime" in response.text
+    assert "--accent:" in response.text
 
 
 def test_both_languages_have_the_same_keys():

@@ -1,0 +1,2 @@
+[   17334ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=qX6hXfNEYilkGvKJDdztd4h7w-bMtvoT2j3F4GzJhi73QfI0tNXRsxgBbF0tvIO7:0
+[   17869ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8765/favicon.ico:0

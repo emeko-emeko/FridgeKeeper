@@ -1,0 +1,133 @@
+- generic [active] [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - link "FridgeKeeper, на главную" [ref=f3e4] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f3e9]: FridgeKeeper
+      - generic [ref=f3e10]:
+        - link "English" [ref=f3e11] [cursor=pointer]:
+          - /url: http://127.0.0.1:8765/?lang=en
+        - link "Открыть приложение" [ref=f3e12] [cursor=pointer]:
+          - /url: /app
+  - main [ref=f3e13]:
+    - generic [ref=f3e15]:
+      - generic [ref=f3e16]:
+        - heading "Сроки годности под контролем" [level=1] [ref=f3e17]
+        - paragraph [ref=f3e18]: FridgeKeeper помнит, что лежит в холодильнике, и напоминает до того, как продукт испортится. Добавляйте товары по фото этикетки или вручную.
+        - generic [ref=f3e19]:
+          - link "Открыть FridgeKeeper" [ref=f3e20] [cursor=pointer]:
+            - /url: /app
+          - link "Подключить Telegram" [ref=f3e21] [cursor=pointer]:
+            - /url: https://t.me/FridgeKeeper_MESSAGE_BOT
+      - generic "Пример холодильника" [ref=f3e22]:
+        - generic [ref=f3e23]:
+          - generic [ref=f3e24]:
+            - generic [ref=f3e25]: Холодильник
+            - generic [ref=f3e26]: "Продуктов: 5"
+          - generic [ref=f3e27]:
+            - button "Молоко 5 дн" [ref=f3e28] [cursor=pointer]:
+              - generic [ref=f3e30]: Молоко
+              - generic [ref=f3e31]: 5 дн
+            - button "Сыр 2 дн" [ref=f3e32] [cursor=pointer]:
+              - generic [ref=f3e34]: Сыр
+              - generic [ref=f3e35]: 2 дн
+          - generic [ref=f3e36]:
+            - button "Яйца · 4 9 дн" [ref=f3e37] [cursor=pointer]:
+              - generic [ref=f3e39]: Яйца · 4
+              - generic [ref=f3e40]: 9 дн
+            - button "Хлеб 1 дн" [ref=f3e41] [cursor=pointer]:
+              - generic [ref=f3e43]: Хлеб
+              - generic [ref=f3e44]: 1 дн
+          - paragraph [ref=f3e45]: Выберите продукт, чтобы увидеть, что с ним делать.
+    - generic [ref=f3e47]:
+      - generic [ref=f3e48]:
+        - paragraph [ref=f3e49]: Проблема
+        - heading "Почему еда портится дома" [level=2] [ref=f3e50]
+        - list [ref=f3e51]:
+          - listitem [ref=f3e52]:
+            - heading "Слепые зоны холодильника" [level=3] [ref=f3e53]
+            - paragraph [ref=f3e54]: Покупаем то, что уже есть, потому что забыли о продукте на задней полке.
+          - listitem [ref=f3e55]:
+            - heading "Нет контроля сроков" [level=3] [ref=f3e56]
+            - paragraph [ref=f3e57]: Даты на упаковках легко пропустить, а автоматических напоминаний обычно нет.
+          - listitem [ref=f3e58]:
+            - heading "Меню без учёта остатков" [level=3] [ref=f3e59]
+            - paragraph [ref=f3e60]: План еды строится спонтанно, и продукты, которые скоро испортятся, остаются нетронутыми.
+      - article [ref=f3e62]:
+        - generic [ref=f3e63]:
+          - generic [ref=f3e64]: MOLOKO
+          - generic [ref=f3e65]: 1 л · 3,2%
+        - heading "Молоко пастеризованное" [level=3] [ref=f3e66]
+        - generic [ref=f3e67]:
+          - generic [ref=f3e68]:
+            - term [ref=f3e69]: Состав
+            - definition [ref=f3e70]: молоко коровье, стабилизатор
+          - generic [ref=f3e71]:
+            - term [ref=f3e72]: Энергия
+            - definition [ref=f3e73]: 64 ккал / 100 мл
+        - generic [ref=f3e74]:
+          - generic [ref=f3e75]: Открыт
+          - strong [ref=f3e76]: 3 дня назад
+        - generic [ref=f3e77]:
+          - generic [ref=f3e78]: Годен до
+          - strong [ref=f3e79]: 14.11.2026
+        - generic [ref=f3e80]:
+          - generic [ref=f3e81]: Остаток
+          - strong [ref=f3e82]: 250 мл
+    - generic [ref=f3e84]:
+      - paragraph [ref=f3e85]: Цель продукта
+      - heading "Меньше денег на выброшенную еду и меньше отходов" [level=2] [ref=f3e86]
+      - paragraph [ref=f3e87]: "FridgeKeeper снижает траты на повторные покупки и количество выброшенной еды: вы видите остатки и успеваете их съесть."
+    - generic [ref=f3e89]:
+      - generic [ref=f3e90]:
+        - paragraph [ref=f3e91]: Как это работает
+        - heading "Три шага без лишних действий" [level=2] [ref=f3e92]
+        - article [ref=f3e94]:
+          - text: "01"
+          - heading "Добавьте продукт" [level=3] [ref=f3e95]
+          - paragraph [ref=f3e96]: Сфотографируйте этикетку или введите название вручную. Категорию и типичный срок хранения подставим сами.
+      - generic [ref=f3e97]:
+        - button "01 · Добавить Молоко Йогурт" [pressed] [ref=f3e98] [cursor=pointer]:
+          - generic [ref=f3e99]: 01 · Добавить
+          - generic [ref=f3e100]:
+            - generic [ref=f3e101]: Молоко
+            - generic [ref=f3e102]: Йогурт
+        - button "02 · Срок Сыр 2 дн Творог" [ref=f3e103] [cursor=pointer]:
+          - generic [ref=f3e104]: 02 · Срок
+          - generic [ref=f3e105]:
+            - generic [ref=f3e106]:
+              - text: Сыр
+              - emphasis [ref=f3e107]: 2 дн
+            - generic [ref=f3e108]: Творог
+        - button "03 · Остатки Хлеб Яйца · 4 шт" [ref=f3e109] [cursor=pointer]:
+          - generic [ref=f3e110]: 03 · Остатки
+          - generic [ref=f3e111]:
+            - generic [ref=f3e112]: Хлеб
+            - generic [ref=f3e113]: Яйца · 4 шт
+    - generic [ref=f3e115]:
+      - generic [ref=f3e116]:
+        - paragraph [ref=f3e117]: Всё связано
+        - heading "Один холодильник, одна картина" [level=2] [ref=f3e118]
+        - paragraph [ref=f3e119]: Продукты, сроки и остатки в одном месте, и всё обновляется само.
+        - tablist [ref=f3e120]:
+          - tab "Ведём остатки Списываем продукт, когда он закончился, а не когда вы заметили." [selected] [ref=f3e121] [cursor=pointer]:
+            - generic [ref=f3e122]: Ведём остатки
+            - paragraph [ref=f3e123]: Списываем продукт, когда он закончился, а не когда вы заметили.
+          - tab "Сроки под контролем" [ref=f3e124] [cursor=pointer]
+          - tab "Покупки по плану" [ref=f3e126] [cursor=pointer]
+      - generic [ref=f3e129]:
+        - generic [ref=f3e130]:
+          - generic [ref=f3e131]: Молоко
+          - strong [ref=f3e132]: списано 250 мл
+        - generic [ref=f3e133]:
+          - generic [ref=f3e134]: Хлеб
+          - strong [ref=f3e135]: остаток 0
+    - generic [ref=f3e137]:
+      - heading "Начните с холодильника, который помнит за вас" [level=2] [ref=f3e138]
+      - link "Открыть FridgeKeeper" [ref=f3e140] [cursor=pointer]:
+        - /url: /app
+  - contentinfo [ref=f3e141]:
+    - generic [ref=f3e142]:
+      - generic [ref=f3e143]: FridgeKeeper · Меньше отходов дома
+      - link "English" [ref=f3e144] [cursor=pointer]:
+        - /url: http://127.0.0.1:8765/?lang=en

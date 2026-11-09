@@ -8,9 +8,21 @@ __pycache__
 Thumbs.db
 .vscode
 .idea
-<<<<<<< HEAD
 .log
 instance".env" 
-=======
 .log
->>>>>>> 4295e4323df05869dee706a8a18112d9963f404d
+instance/
+.agents/
+.codex/
+.impeccable/
+"added hero"/
+skills-lock.json
+pytest.ini
+NOTAR.pdf
+DESIGN.md
+.env
+unslop
+.playwright-mcp
+.pytest_cache
+.codex
+unslop-check
