@@ -1,8 +1,7 @@
 """Тексты лендинга на русском и английском языках.
 
-Все строки интерфейса живут здесь. Ключи с префиксом ``js_`` и группы
-``hero_preview_*``, ``prod_*``, ``info_*`` передаются в браузер для демо
-(см. ``get_js_strings`` и ``static/js/effects.js``).
+Ключи с префиксом ``js_`` и группы ``hero_preview_*``, ``prod_*``, ``info_*``
+передаются в браузер для демо-холодильника (см. ``get_js_strings``).
 """
 
 from __future__ import annotations
@@ -23,52 +22,47 @@ TEXTS: dict[str, dict[str, str]] = {
         "nav_open": "Открыть приложение",
         "footer_tagline": "FridgeKeeper · Меньше отходов дома",
         "aria_logo_home": "FridgeKeeper, на главную",
+        "theme_label": "Переключить тему",
 
         # Hero
-        "hero_title": "Сроки годности под контролем",
-        "hero_sub": "FridgeKeeper помнит, что лежит в холодильнике, и напоминает до того, как продукт испортится. Добавляйте товары по фото этикетки или вручную.",
-        "cta_primary": "Открыть FridgeKeeper",
-        "cta_secondary": "Подключить Telegram",
-        "hero_preview_label": "Пример холодильника",
-        "hero_preview_title": "Холодильник",
-        "hero_preview_count": "Продуктов: {n}",
-        "hero_preview_hint": "Нажмите на продукт, чтобы увидеть подсказку.",
-        "hero_preview_default_info": "Выберите продукт, чтобы увидеть, что с ним делать.",
         "hero_eyebrow": "Холодильник под присмотром",
         "hero_title_pre": "Знайте, что испортится",
         "hero_title_hl": "раньше",
         "hero_title_post": ", чем вы заметите",
+        "hero_sub": "FridgeKeeper помнит, что лежит в холодильнике, и напоминает до того, как продукт испортится. Добавляйте товары по фото этикетки или вручную.",
+        "cta_primary": "Открыть FridgeKeeper",
+        "cta_secondary": "Подключить Telegram",
 
-
-        # Демо-холодильник: продукты
+        # Демо-холодильник
+        "hero_preview_label": "Пример холодильника",
+        "hero_preview_title": "Холодильник",
+        "hero_preview_hint": "Нажмите на продукт, чтобы увидеть подсказку.",
+        "hero_preview_default_info": "Выберите продукт, чтобы увидеть, что с ним делать.",
         "prod_milk": "Молоко",
         "prod_cheese": "Сыр",
         "prod_yogurt": "Йогурт",
         "prod_eggs": "Яйца",
         "prod_bread": "Хлеб",
-        "prod_eggs_count": "Яйца · 4",
-        "info_milk": "Молоко открыто 3 дня назад. Запаса ещё на 5 дней, всё в порядке.",
+        "info_milk": "Молоко открыли три дня назад. Ещё пять дней, допейте спокойно.",
         "info_cheese": "Сыр скоро испортится. Бот напомнит за день, а из сыра можно приготовить ужин сегодня.",
         "info_yogurt": "Йогурт свежий, срок ещё 6 дней. Можно не спешить.",
         "info_eggs": "Яйца: 4 штуки, срок ещё 9 дней.",
         "info_bread": "Хлеб испортится завтра. Съешьте сегодня или уберите в морозилку.",
-
-        # Демо: единицы и статусы
         "js_days_fmt": "{n} дн",
         "js_today": "сегодня",
         "js_count_fmt": "Продуктов: {n}",
 
-        # Problem
+        # Проблема
         "problems_eyebrow": "Проблема",
         "problems_title": "Почему еда портится дома",
-        "problem1_title": "Слепые зоны холодильника",
+        "problem1_title": "Слепые зоны",
         "problem1_text": "Покупаем то, что уже есть, потому что забыли о продукте на задней полке.",
-        "problem2_title": "Нет контроля сроков",
+        "problem2_title": "Сроки без контроля",
         "problem2_text": "Даты на упаковках легко пропустить, а автоматических напоминаний обычно нет.",
-        "problem3_title": "Меню без учёта остатков",
-        "problem3_text": "План еды строится спонтанно, и продукты, которые скоро испортятся, остаются нетронутыми.",
+        "problem3_title": "Меню без остатков",
+        "problem3_text": "План еды строится на ходу, и продукты, которые скоро испортятся, остаются нетронутыми.",
 
-        # Этикетка молока
+        # Этикетка
         "label_brand": "MOLOKO",
         "label_name": "Молоко пастеризованное",
         "label_volume": "1 л · 3,2%",
@@ -85,12 +79,12 @@ TEXTS: dict[str, dict[str, str]] = {
 
         # Цель
         "goal_eyebrow": "Цель продукта",
-        "goal_title": "Меньше денег на выброшенную еду и меньше отходов",
-        "goal_text": "FridgeKeeper снижает траты на повторные покупки и количество выброшенной еды: вы видите остатки и успеваете их съесть.",
+        "goal_title": "Сколько еды вы выбросили в прошлом месяце?",
+        "goal_text": "Обычно ответ — то, что забыли на задней полке. FridgeKeeper помнит за вас, что и когда пора съесть.",
 
         # Шаги
-        "steps_eyebrow": "Как это работает",
-        "steps_title": "Три шага без лишних действий",
+        "steps_eyebrow": "Как это выглядит",
+        "steps_title": "Просто добавьте и забудьте",
         "step1_title": "Добавьте продукт",
         "step1_text": "Сфотографируйте этикетку или введите название вручную. Категорию и типичный срок хранения подставим сами.",
         "step2_title": "Мы следим за сроком",
@@ -110,8 +104,8 @@ TEXTS: dict[str, dict[str, str]] = {
 
         # Всё связано
         "connected_eyebrow": "Всё связано",
-        "connected_title": "Один холодильник, одна картина",
-        "connected_lead": "Продукты, сроки и остатки в одном месте, и всё обновляется само.",
+        "connected_title": "Всё, что лежит у вас, в одном списке",
+        "connected_lead": "Остатки, сроки и покупки связаны. Меняется одно, обновляется всё.",
         "feature1_title": "Ведём остатки",
         "feature1_text": "Списываем продукт, когда он закончился, а не когда вы заметили.",
         "feature2_title": "Сроки под контролем",
@@ -131,8 +125,47 @@ TEXTS: dict[str, dict[str, str]] = {
         "fp3_b": "Яйца",
         "fp3_b_val": "нужно 2 шт",
 
+        # Telegram-бот
+        "bot_eyebrow": "Telegram-бот",
+        "bot_title": "Напишет первым, когда пора",
+        "bot_text": "Пока веб-приложение в разработке, всё работает через бота: добавляйте продукты, спрашивайте остатки, получайте напоминания.",
+        "bot_user1": "добавь молоко, открыл сегодня",
+        "bot_reply1": "Молоко добавлено. Годен примерно до 17 ноября, напомню за день.",
+        "bot_user2": "что скоро испортится?",
+        "bot_reply2": "Хлеб сегодня, сыр через 2 дня. Сыр лучше съесть на ужин.",
+
+        # Отзывы (примеры)
+        "reviews_eyebrow": "Истории",
+        "reviews_title": "Как им пользуются",
+        "reviews_note": "Это примеры, реальных отзывов пока нет. Замените их своими историями.",
+        "review1_text": "Раньше каждую неделю выкидывала хлеб. Теперь бот пишет за день, и хлеб съедается.",
+        "review1_name": "Аня",
+        "review1_role": "семья с двумя детьми",
+        "review2_text": "Не ищу в голове, что купить. Список покупок уже учитывает то, что лежит в холодильнике.",
+        "review2_name": "Игорь",
+        "review2_role": "живёт один",
+        "review3_text": "Фото этикетки вместо ручного ввода. Пять секунд, и срок уже в системе.",
+        "review3_name": "Марина",
+        "review3_role": "готовит на неделю вперёд",
+
+        # FAQ
+        "faq_eyebrow": "Вопросы",
+        "faq_title": "Что обычно спрашивают",
+        "faq1_q": "Нужно ли фото каждой этикетки?",
+        "faq1_a": "Нет. Можно ввести название вручную, а срок хранения подставим по категории. Фото нужно, чтобы точнее взять дату.",
+        "faq2_q": "Что вы храните о продуктах?",
+        "faq2_a": "Только то, что нужно для напоминаний: название продукта, дату и остаток.",
+        "faq3_q": "Работает ли без Telegram?",
+        "faq3_a": "Пока работает через бота. Веб-версия в разработке, войти в неё будет тем же аккаунтом.",
+        "faq4_q": "Это платный сервис?",
+        "faq4_a": "Проект некоммерческий, поэтому подписок и тарифов нет.",
+
         # Финал
-        "final_title": "Начните с холодильника, который помнит за вас",
+        "final_title": "Холодильник, который помнит за вас",
+        "final_text": "Добавьте первый продукт прямо сейчас. Это займёт меньше минуты.",
+        "final_small1": "Некоммерческий проект",
+        "final_small2": "Работает в Telegram",
+        "final_small3": "Меньше отходов дома",
 
         # Заглушка приложения
         "app_page_title": "FridgeKeeper — веб-приложение скоро",
@@ -141,14 +174,33 @@ TEXTS: dict[str, dict[str, str]] = {
         "app_back": "На главную",
         "app_bot": "Открыть бота",
 
-        "goal_title": "Сколько еды вы выбросили в прошлом месяце?",
-        "goal_text": "Обычно ответ — то, что забыли на задней полке. FridgeKeeper помнит за вас, что и когда пора съесть.",
-        "steps_eyebrow": "Как это выглядит",
-        "steps_title": "Просто добавьте и забудьте",
-        "connected_title": "Всё, что лежит у вас, в одном списке",
-        "connected_lead": "Остатки, сроки и покупки связаны. Меняется одно, обновляется всё.",
-        "final_title": "Холодильник, который помнит за вас",
-        "info_milk": "Молоко открыли три дня назад. Ещё пять дней, допейте спокойно.",
+        "fridge_door_left": "Открыть левую дверцу",
+        "fridge_door_right": "Открыть правую дверцу",
+        "marquee_1": "made by emeko-emeko",
+        "marquee_2": "for NOTAR ACADEMY SELECTION HACKATHON",
+        "shelf_milk_hint": "Молоко · 5 дн",
+        "shelf_yogurt_hint": "Йогурт · 6 дн",
+        "shelf_cheese_hint": "Сыр · 2 дн",
+        "shelf_bread_hint": "Хлеб · сегодня или завтра",
+        "shelf_eggs_hint": "Яйца · 9 дн",
+        "shelf_juice_hint": "Сок · 12 дн",
+        "shelf_butter_hint": "Масло · 20 дн",
+        "shelf_tomato_hint": "Помидоры · 4 дн",
+
+        "shelf_sausage_hint": "Колбаса · 7 дн",
+        "shelf_cucumber_hint": "Огурцы · 5 дн",
+        "shelf_broccoli_hint": "Брокколи · 4 дн",
+        "shelf_greens_hint": "Зелень · 3 дн",
+        "shelf_candy_hint": "Конфеты · 120 дн",
+        "shelf_chocolate_hint": "Шоколад · 180 дн",
+        "shelf_ketchup_hint": "Кетчуп · 40 дн",
+        "shelf_mayo_hint": "Майонез · 30 дн",
+        "shelf_soda_hint": "Газировка · 90 дн",
+        "shelf_mustard_hint": "Горчица · 180 дн",
+        "shelf_water_hint": "Вода · 300 дн",
+        "shelf_kefir_hint": "Кефир · 8 дн",
+        "shelf_jam_hint": "Варенье · 200 дн",
+        "shelf_pickles_hint": "Маринованные огурцы · 60 дн",
     },
     "en": {
         "html_lang": "en",
@@ -159,45 +211,32 @@ TEXTS: dict[str, dict[str, str]] = {
         "nav_open": "Open the app",
         "footer_tagline": "FridgeKeeper · Less food waste at home",
         "aria_logo_home": "FridgeKeeper, go to home",
-
-        "goal_title": "How much food did you throw out last month?",
-        "goal_text": "Usually it's whatever got forgotten on the back shelf. FridgeKeeper remembers for you what to eat and when.",
-        "steps_eyebrow": "What it looks like",
-        "steps_title": "Add it once and forget about it",
-        "connected_title": "Everything you have, in one list",
-        "connected_lead": "Stock, dates and shopping are linked. Change one thing and the rest updates.",
-        "final_title": "A fridge that remembers for you",
-        "info_milk": "The milk was opened three days ago. Five days left, no hurry.",
+        "theme_label": "Switch theme",
 
         # Hero
-        "hero_title": "Expiry dates, under control",
-        "hero_sub": "FridgeKeeper remembers what's in your fridge and reminds you before food goes bad. Add items from a label photo or by hand.",
-        "cta_primary": "Open FridgeKeeper",
-        "cta_secondary": "Connect Telegram",
-        "hero_preview_label": "Fridge example",
-        "hero_preview_title": "Fridge",
-        "hero_preview_count": "Items: {n}",
-        "hero_preview_hint": "Tap an item to see a tip.",
-        "hero_preview_default_info": "Pick an item to see what to do with it.",
         "hero_eyebrow": "Your fridge, kept in view",
         "hero_title_pre": "Know what will spoil",
         "hero_title_hl": "sooner",
         "hero_title_post": "than you notice",
+        "hero_sub": "FridgeKeeper remembers what's in your fridge and reminds you before food goes bad. Add items from a label photo or by hand.",
+        "cta_primary": "Open FridgeKeeper",
+        "cta_secondary": "Connect Telegram",
 
-        # Demo fridge: items
+        # Demo fridge
+        "hero_preview_label": "Fridge example",
+        "hero_preview_title": "Fridge",
+        "hero_preview_hint": "Tap an item to see a tip.",
+        "hero_preview_default_info": "Pick an item to see what to do with it.",
         "prod_milk": "Milk",
         "prod_cheese": "Cheese",
         "prod_yogurt": "Yogurt",
         "prod_eggs": "Eggs",
         "prod_bread": "Bread",
-        "prod_eggs_count": "Eggs · 4",
-        "info_milk": "The milk was opened 3 days ago. It keeps for 5 more days, all good.",
+        "info_milk": "The milk was opened three days ago. Five days left, no hurry.",
         "info_cheese": "The cheese will go off soon. The bot reminds you a day ahead, and you could make cheese toast tonight.",
         "info_yogurt": "The yogurt is fresh with 6 days left. No rush.",
         "info_eggs": "Eggs: 4 pieces, 9 days left.",
         "info_bread": "The bread goes stale tomorrow. Eat it today or freeze it.",
-
-        # Demo: units and statuses
         "js_days_fmt": "{n} d",
         "js_today": "today",
         "js_count_fmt": "Items: {n}",
@@ -205,14 +244,14 @@ TEXTS: dict[str, dict[str, str]] = {
         # Problem
         "problems_eyebrow": "The problem",
         "problems_title": "Why food goes to waste at home",
-        "problem1_title": "Blind spots in the fridge",
+        "problem1_title": "Blind spots",
         "problem1_text": "We buy what we already have because we forgot about the item on the back shelf.",
-        "problem2_title": "No expiry tracking",
+        "problem2_title": "No date tracking",
         "problem2_text": "Dates on packaging are easy to miss, and there are usually no automatic reminders.",
-        "problem3_title": "Menus ignore what you have",
+        "problem3_title": "Menus ignore stock",
         "problem3_text": "Meals get planned on the fly, and items about to expire stay untouched.",
 
-        # Milk label
+        # Label
         "label_brand": "MILK",
         "label_name": "Pasteurized milk",
         "label_volume": "1 l · 3.2%",
@@ -229,12 +268,12 @@ TEXTS: dict[str, dict[str, str]] = {
 
         # Goal
         "goal_eyebrow": "Our goal",
-        "goal_title": "Less money and food wasted",
-        "goal_text": "FridgeKeeper cuts repeat purchases and thrown-away food: you see what you have and eat it in time.",
+        "goal_title": "How much food did you throw out last month?",
+        "goal_text": "Usually it's whatever got forgotten on the back shelf. FridgeKeeper remembers for you what to eat and when.",
 
         # Steps
-        "steps_eyebrow": "How it works",
-        "steps_title": "Three steps, no extra effort",
+        "steps_eyebrow": "What it looks like",
+        "steps_title": "Add it once and forget about it",
         "step1_title": "Add a product",
         "step1_text": "Snap a photo of the label or type the name in. We fill in the category and typical shelf life.",
         "step2_title": "We track the date",
@@ -254,8 +293,8 @@ TEXTS: dict[str, dict[str, str]] = {
 
         # Connected
         "connected_eyebrow": "Connected",
-        "connected_title": "One fridge, one picture",
-        "connected_lead": "Items, dates and stock in one place, and everything updates on its own.",
+        "connected_title": "Everything you have, in one list",
+        "connected_lead": "Stock, dates and shopping are linked. Change one thing and the rest updates.",
         "feature1_title": "Track stock",
         "feature1_text": "We remove an item when it runs out, not when you notice.",
         "feature2_title": "Dates under control",
@@ -275,8 +314,47 @@ TEXTS: dict[str, dict[str, str]] = {
         "fp3_b": "Eggs",
         "fp3_b_val": "need 2 more",
 
+        # Telegram bot
+        "bot_eyebrow": "Telegram bot",
+        "bot_title": "It messages you first, when it's time",
+        "bot_text": "While the web app is in progress, everything runs through the bot: add products, ask what's left, get reminders.",
+        "bot_user1": "add milk, opened today",
+        "bot_reply1": "Milk added. Good until about 17 Nov, I'll remind you a day before.",
+        "bot_user2": "what's going off soon?",
+        "bot_reply2": "Bread today, cheese in 2 days. Cheese is best eaten at dinner.",
+
+        # Reviews (examples)
+        "reviews_eyebrow": "Stories",
+        "reviews_title": "How people use it",
+        "reviews_note": "These are examples, there are no real reviews yet. Replace them with your own stories.",
+        "review1_text": "I used to throw out bread every week. Now the bot warns me a day ahead, and the bread gets eaten.",
+        "review1_name": "Anna",
+        "review1_role": "family with two kids",
+        "review2_text": "I don't have to remember what to buy. The shopping list already counts what's in the fridge.",
+        "review2_name": "Igor",
+        "review2_role": "lives alone",
+        "review3_text": "A label photo instead of typing. Five seconds and the date is in the system.",
+        "review3_name": "Marina",
+        "review3_role": "cooks for the whole week",
+
+        # FAQ
+        "faq_eyebrow": "Questions",
+        "faq_title": "What people usually ask",
+        "faq1_q": "Do I need a photo of every label?",
+        "faq1_a": "No. You can type the name, and we fill in shelf life by category. A photo just gets the date more accurately.",
+        "faq2_q": "What do you store about products?",
+        "faq2_a": "Only what reminders need: the product name, the date and the amount left.",
+        "faq3_q": "Does it work without Telegram?",
+        "faq3_a": "For now it works through the bot. The web version is in progress, and you'll sign in with the same account.",
+        "faq4_q": "Is it a paid service?",
+        "faq4_a": "It's a non-commercial project, so there are no subscriptions or plans.",
+
         # Final
-        "final_title": "Start with a fridge that remembers for you",
+        "final_title": "A fridge that remembers for you",
+        "final_text": "Add your first product right now. It takes less than a minute.",
+        "final_small1": "Non-commercial project",
+        "final_small2": "Works in Telegram",
+        "final_small3": "Less food waste at home",
 
         # App placeholder
         "app_page_title": "FridgeKeeper — web app coming soon",
@@ -284,6 +362,34 @@ TEXTS: dict[str, dict[str, str]] = {
         "app_text": "The FridgeKeeper web interface is in progress. For now, add products through the Telegram bot.",
         "app_back": "Back to home",
         "app_bot": "Open the bot",
+
+        "fridge_door_left": "Open the left door",
+        "fridge_door_right": "Open the right door",
+        "marquee_1": "made by emeko-emeko",
+        "marquee_2": "for NOTAR ACADEMY SELECTION HACKATHON",
+        "shelf_milk_hint": "Milk · 5 d",
+        "shelf_yogurt_hint": "Yogurt · 6 d",
+        "shelf_cheese_hint": "Cheese · 2 d",
+        "shelf_bread_hint": "Bread · today or tomorrow",
+        "shelf_eggs_hint": "Eggs · 9 d",
+        "shelf_juice_hint": "Juice · 12 d",
+        "shelf_butter_hint": "Butter · 20 d",
+        "shelf_tomato_hint": "Tomatoes · 4 d",
+
+        "shelf_sausage_hint": "Sausage · 7 d",
+        "shelf_cucumber_hint": "Cucumbers · 5 d",
+        "shelf_broccoli_hint": "Broccoli · 4 d",
+        "shelf_greens_hint": "Herbs · 3 d",
+        "shelf_candy_hint": "Candy · 120 d",
+        "shelf_chocolate_hint": "Chocolate · 180 d",
+        "shelf_ketchup_hint": "Ketchup · 40 d",
+        "shelf_mayo_hint": "Mayonnaise · 30 d",
+        "shelf_soda_hint": "Soda · 90 d",
+        "shelf_mustard_hint": "Mustard · 180 d",
+        "shelf_water_hint": "Water · 300 d",
+        "shelf_kefir_hint": "Kefir · 8 d",
+        "shelf_jam_hint": "Jam · 200 d",
+        "shelf_pickles_hint": "Pickles · 60 d",
     },
 }
 
