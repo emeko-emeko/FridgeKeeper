@@ -1,5 +1,6 @@
 """Подключение к базе данных (асинхронный SQLAlchemy поверх SQLite)."""
 
+from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -13,7 +14,8 @@ from models import Base
 
 def make_session_factory(url: str) -> tuple[AsyncEngine, async_sessionmaker[AsyncSession]]:
     """Создаёт движок и фабрику сессий для указанной строки подключения."""
-    engine = create_async_engine(url)
+    # NullPool: соединения не переиспользуются между запусками event loop (Vercel, Neon)
+    engine = create_async_engine(url, poolclass=NullPool)
     factory = async_sessionmaker(engine, expire_on_commit=False)
     return engine, factory
 
