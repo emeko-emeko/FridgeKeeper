@@ -59,7 +59,7 @@
       .from(".hero .hero__actions > *", { y: 16, opacity: 0, duration: 0.6, stagger: 0.1 }, "-=0.45")
       .from(".window", { y: 56, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.3")
       .from(".hero__phone", { y: 72, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.75")
-      .from(".hero__tag", { y: 28, opacity: 0, rotate: -7, duration: 0.7, ease: "back.out(1.5)" }, "-=0.5")
+      .from(".hero__tag", { y: 28, opacity: 0, rotate: -7, duration: 0.7, ease: "power3.out" }, "-=0.5")
       .from(".hero__tag .meter b", { scaleX: 0, duration: 1.2, ease: "power2.out" }, "-=0.3");
 
     // Секции: каждый блок поднимается и проявляется, когда доходит до нижней трети экрана
@@ -67,7 +67,7 @@
       el.classList.add("is-visible");
       el.style.transition = "none";
       gsap.from(el, {
-        y: 36, opacity: 0, duration: 0.9, ease: "power3.out",
+        y: 20, opacity: 0, duration: 0.5, ease: "power3.out",
         scrollTrigger: { trigger: el, start: "top 88%", once: true }
       });
     });
@@ -75,11 +75,11 @@
     // Три проблемы: по очереди слева направо
     var issues = $$(".issues li");
     if (issues.length) {
-      gsap.set(issues, { y: 40, opacity: 0 });
+      gsap.set(issues, { y: 20, opacity: 0 });
       ScrollTrigger.batch(issues, {
         start: "top 90%", once: true,
         onEnter: function (items) {
-          gsap.to(items, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", stagger: 0.14 });
+          gsap.to(items, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out", stagger: 0.06 });
         }
       });
     }

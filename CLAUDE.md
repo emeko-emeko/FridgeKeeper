@@ -145,7 +145,14 @@ FridgeKeeper\
 - Находки применять самостоятельно или через агента `unslop-fixer`; после правок снова запускать `unslop-reviewer`, пока вердикт не «чисто». Пользователь `/unslop` вручную больше не запускает.
 - Агенты не видят экран: пункты из их списка «Не проверено» (светлая тема, мобильная ширина, контраст на фото, анимация) проверять в браузере самому.
 - В журнале указывать вердикт агента и что из его списка применено, а что нет и почему.
-- Решения пользователя не оспариваются: Fraunces, терракотовая секция `#how`, фото Unsplash, GSAP/Lenis, бегущая строка.
+- Любое решение пользователя можно оспорить и предложить переделать, включая шрифты, цвета, структуру страниц, секции, анимации и тексты. Для каждого предложения указать причину и вариант, который сохраняет смысл. Менять что-либо без подтверждения пользователя нельзя: сначала план, потом правка, как и для всех изменений кода.
+
+## Команда агентов (с 13.11.2026)
+- Запуск: `/team <задача>` (`.claude\commands\team.md`). Основная сессия показывает план, ждёт подтверждения один раз, затем ведёт цикл сама: подагенты не умеют запускать друг друга и менять свою модель.
+- Роли и модели: `team-coder` (бэкенд, Haiku 5.5), `team-designer` (дизайн, Sonnet 5.5, effort medium), `unslop-reviewer` (перепроверка дизайнера, Haiku 5.5), `unslop-fixer` (механические находки, Haiku 5.5), `team-controller` (контроль плана, границ и проверок, Haiku 5.5). Файлы в `.claude\agents\`.
+- Эскалация: агент заканчивает отчёт строкой `ЭСКАЛАЦИЯ: да | причина | что пробовал`, основная сессия перезапускает его на модели выше (Haiku на Sonnet, дизайнер на Opus), не больше одного раза на шаг. Не помогло: вопрос пользователю.
+- Границы: кодер не трогает `templates\`, `static\`, `core\i18n.py`; дизайнер не трогает бэкенд; никто не трогает `.env`, `CLAUDE.md`, `.claude\`, не коммитит и не пушит без слова пользователя.
+- Итог каждого прогона записывать в журнал: роли, вердикты, эскалации, вывод `pytest`.
 
 ## Graphify (карта проекта)
 - Карта: `graphify-out\graph.html` и `graphify-out\graph.json`. Вызов: `/graphify`, инструкция в `C:\Users\User\.claude\skills\graphify\SKILL.md`.
@@ -296,6 +303,40 @@ FridgeKeeper\
   - Английские скриншоты окна приложения (демо-данные в SQLite на временном сервере порта 8016, остановлен); шаблон берёт `-en` файлы при `lang == 'en'`.
   - Проверка: `uv run pytest -q` → `60 passed, 1 warning`; `node --check effects.js` → OK; в браузере `/?lang=en`: заголовок, подчёркивание, картинки загружены, горизонтальной прокрутки нет (1009 = 1009), финал и подвал на месте.
   - Не смотрел: светлую и тёмную тему после правок, терракотовую секцию на 390 px, русскую версию глазами, Vercel. Не закоммичено. Ключи `topbar_new`, `marquee_*` (кроме подписи) остались в `i18n.py`.
+
+- **13.11.2026, skills и библиотеки UI (по запросу пользователя)**: ui-ux-pro-max (скопирован в `~/.claude/skills/`, 7 папок), taste-skill (`design-taste-frontend`, симлинк на `~/.claude/skill-repos/taste-skill`). Клоны в `~/.claude/skill-repos/`: taste-skill, ui-ux-pro-max-skill, gstack, react-three-fiber, liquid-glass-js, shadergradient. gstack не установлен: его `./setup` требует Bun, пишет hooks в `~/.claude/settings.json`, ждём решения пользователя. Код проекта не менялся. Проверка: `python scripts/search.py "glassmorphism dashboard" --design-system` в папке навыка выводит рекомендацию. Caveat: SKILL.md ui-ux-pro-max ссылается на `${CLAUDE_PLUGIN_ROOT}`, при копии переменной нет, путь надо править.
+
+- **13.11.2026, gstack установлен (по подтверждению пользователя)**: Bun 1.4.4 через `npm install -g bun`. gstack перенесён в `~/.claude/skills/gstack`, `./setup` выполнен, exit 0. Версия 1.99.2.0, канал stable. `setup --status`: «current», 114 ссылок в SKILL.md, все разрешаются. Записан Stop-hook в `~/.claude/settings.json` (с бэкапом `settings.json.bak.<ts>`). Hooks plan-tune не ставились (setup их не включил без флага). Codex не установлен. gbrain не установлен. Код проекта не менялся.
+
+## Дизайн-навыки и библиотеки (с 13.11.2026)
+Источник токенов: `design-system/fridgekeeper/MASTER.md`. Он опирается на текущие решения (Fraunces, Inter, терракота) и не заменяет их. Если страница требует отдельных правил, класть в `design-system/fridgekeeper/pages/<имя>.md`.
+
+**Порядок работы над внешним видом:**
+1. Новая страница или секция: `design-taste-frontend` (правила «не выглядит как шаблон», одна система, реальные фото и UI). Тексты и цвета сверять с MASTER.md.
+2. Токены и палитра, проверка стиля: `uipro-ui-ux-pro-max`. Поиск: `python "$HOME/.claude/skills/uipro-ui-ux-pro-max/scripts/search.py" "<запрос>" --domain <домен>`. Не перезаписывать MASTER.md без `--force` и без подтверждения.
+3. Перед «готово»: `unslop-reviewer` (вердикт «чисто»), затем `design-review` из gstack на живой странице (браузер gstack). Находки правит `unslop-fixer` или сам.
+4. Сложные решения по дизайну: `plan-design-review` (gstack) до правки.
+
+**Библиотеки как примеры (не подключены к проекту, код не менять без плана):**
+- `liquid-glass-js` (MIT, без зависимостей, кроме html2canvas): стеклянные панели. Брать для карточек на `/app` или фона блока `#how`. Подключение как GSAP: через `static/vendor/`.
+- `react-three-fiber` (MIT, `@react-three/fiber`): 3D-сцены. Нужен React и сборка, в проекте React нет. Как пример кода для отдельного React-острова.
+- `shadergradient` (MIT, `@shadergradient/react`, есть `@shadergradient/vue`): градиентный фон. Нужен React или Vue. Как пример для фона первого экрана, если появится React-остров.
+Репозитории лежат в `C:/Users/User/.claude/skill-repos/`.
+
+**Навыки и плагины, которые есть (дизайн и смежное):**
+- Проектные агенты: `.claude/agents/unslop-reviewer.md`, `unslop-fixer.md`, `impeccable-*.md` (finish-reviewer, documenter, asset-producer, manual-edit-applier).
+- Скиллы: `unslop`, `design-taste-frontend` (taste-skill), `uipro-banner-design`, `uipro-brand`, `uipro-design`, `uipro-design-system`, `uipro-slides`, `uipro-ui-styling`, `uipro-ui-ux-pro-max`.
+- gstack (установлен 13.11, версия 1.99.2.0): `design-review`, `design-html`, `design-shotgun`, `design-consultation`, `design-motion`, `plan-design-review`, `plan-devex-review`, `browse`, `qa`, `review`, `ship`, `careful`, `freeze`, `guard`.
+- Плагины: `impeccable`, `frontend-design`, `vectorlab-ux-skills` (forms, errors, spacing, motion), `design-skills` (critique, accessibility-audit, design-systems), `design` (design-critique, design-system, ux-copy), `ecc` (`liquid-glass-design`, `make-interfaces-feel-better`, `motion-*`, `frontend-a11y`, `design-system`), `figma` (только при наличии макета в Figma, с авторизацией через /mcp).
+- Прочее: `graphify` (карта кода), `find-skills`, `learned`.
+
+**Не в дизайне:** `unslop` требует, чтобы агент после правок вызывал `unslop-reviewer`. Запуск `/unslop` вручную больше не нужен (правило выше).
+
+- **13.11.2026, дизайн-навыки настроены (по подтверждению плана)**: дубликаты ui-ux переименованы в `uipro-*` (`~/.claude/skills/uipro-banner-design`, `uipro-brand`, `uipro-design`, `uipro-design-system`, `uipro-slides`, `uipro-ui-styling`, `uipro-ui-ux-pro-max`). Пути `${CLAUDE_PLUGIN_ROOT}` заменены на `$HOME/.claude/skills/uipro-*`, проверка: `search.py "saas dashboard" --domain style -n 2` вывела 2 результата. Создан `design-system/fridgekeeper/MASTER.md`: сгенерированный инструментом вариант (Outfit, красная палитра) отклонён как противоречащий решениям, MASTER переписан по токенам из `static/css/landing.css` и `app.css`. Папка `pages/` пустая. В `CLAUDE.md` добавлен раздел «Дизайн-навыки и библиотеки» (порядок работы, библиотеки как примеры, список навыков и плагинов). Код сайта не менялся. Не проверено: `design-review` в браузере и `unslop-reviewer` (правок внешнего вида не было).
+
+- **13.11.2026, Правило изменено**: раньше решения пользователя (Fraunces, терракотовая секция `#how`, фото Unsplash, GSAP/Lenis, бегущая строка) не оспаривались. Теперь любое решение можно оспорить и предложить переделку с причиной. Без подтверждения пользователя ничего не меняется.
+- **13.11.2026, команда агентов (по запросу «создай команду агентов…»)**: созданы `.claude\agents\team-coder.md` (Haiku 5.5), `team-designer.md` (Sonnet 5.5, effort medium), `team-controller.md` (Haiku 5.5) и команда `.claude\commands\team.md`. `unslop-reviewer` и `unslop-fixer` переведены с Sonnet/inherit на Haiku 5.5. ID моделей `claude-haiku-5-5` и `claude-sonnet-5-5` взяты из системных данных сессии, в живом запуске агентов не проверены. Правило изменено: добавлен раздел «Команда агентов». Агенты и команда подхватятся после перезапуска сессии, в этой сессии не запускались.
+- **13.11.2026, Правило изменено (unslop-reviewer)**: из `.claude\agents\unslop-reviewer.md` убран раздел «Решения проекта, которые не оспариваются». Теперь ревьюер может оспаривать прежние решения (шрифты, `#how`, фото, GSAP/Lenis, бегущая строка) отдельным разделом «Предложения» с причиной и вариантом, сохраняющим смысл; применять их без подтверждения пользователя нельзя. Согласовано с правилом от 13.11 «Любое решение пользователя можно оспорить».
 
 ## Нерешённые вопросы и риски
 - Законность обработки данных за пределами Казахстана: решение принято, но юридически не проверено специалистом.

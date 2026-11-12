@@ -27,8 +27,8 @@
       color: var(--text);
       background: var(--bg);
     }
-    h1 { font-size: 22px; margin: 4px 0 4px; }
-    h2 { font-size: 17px; margin: 0 0 6px; }
+    h1 { font-size: 22px; font-weight: 500; margin: 4px 0 4px; }
+    h2 { font-size: 17px; font-weight: 500; margin: 0 0 8px; }
     .hidden { display: none !important; }
     .subtitle { color: var(--hint); font-size: 14px; margin: 0 0 16px; }
     .status { color: var(--hint); font-size: 14px; min-height: 20px; margin: 0 0 12px; }
@@ -45,13 +45,13 @@
       display: block;
       width: 100%;
       font: inherit;
-      font-weight: 600;
-      padding: 14px;
-      margin-top: 10px;
+      font-weight: 500;
+      padding: 12px;
+      margin-top: 12px;
       border-radius: 12px;
       background: var(--card);
       color: var(--text);
-      border: 1px solid var(--hint);
+      border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
       cursor: pointer;
     }
     .btn-primary { background: var(--btn); color: var(--btn-text); border: none; }
@@ -66,20 +66,20 @@
     input[type=text], input[type=date] {
       display: block;
       width: 100%;
-      margin-top: 6px;
+      margin-top: 8px;
       padding: 12px;
       font: inherit;
       font-size: 16px;
       color: var(--text);
       background: var(--bg);
-      border: 1px solid var(--hint);
+      border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
       border-radius: 10px;
     }
 
     .suggest-hint { color: var(--hint); font-size: 14px; margin: 12px 0 0; }
     .warn {
       color: var(--danger);
-      font-weight: 600;
+      font-weight: 500;
       margin: 12px 0 0;
     }
     .saved {
