@@ -22,10 +22,29 @@ DATABASE_URL_RAW: str = os.getenv(
     f"sqlite+aiosqlite:///{(BASE_DIR / 'instance' / 'database.db').as_posix()}",
 )
 
-# Neon и Vercel выдают postgres:// или postgresql://, SQLAlchemy нужен драйвер asyncpg
-DATABASE_URL: str = DATABASE_URL_RAW.replace("postgres://", "postgresql+asyncpg://", 1).replace(
-    "postgresql://", "postgresql+asyncpg://", 1
-) if DATABASE_URL_RAW.startswith(("postgres://", "postgresql://")) else DATABASE_URL_RAW
+def _normalize_database_url(raw: str) -> str:
+    """Приводит строку Neon/Vercel к виду, который понимает asyncpg.
+
+    Neon выдаёт postgres:// или postgresql:// с параметрами sslmode и channel_binding.
+    asyncpg не знает channel_binding, а sslmode заменяем на ssl.
+    """
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+    if not raw.startswith(("postgres://", "postgresql://")):
+        return raw
+    parts = urlsplit(raw)
+    scheme = "postgresql+asyncpg"
+    query = []
+    for key, value in parse_qsl(parts.query, keep_blank_values=True):
+        if key == "channel_binding":
+            continue
+        if key == "sslmode":
+            key = "ssl"
+        query.append((key, value))
+    return urlunsplit((scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
+
+
+DATABASE_URL: str = _normalize_database_url(DATABASE_URL_RAW)
 
 # Срок жизни токена связки с Telegram, в минутах
 LINK_TOKEN_TTL_MINUTES: int = int(os.getenv("LINK_TOKEN_TTL_MINUTES", "10"))
