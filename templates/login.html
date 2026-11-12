@@ -1,12 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-<main class="container" style="padding: 4rem 0; text-align: center;">
+<main class="container login">
   <h1>{{ t.login_title }}</h1>
   <p>{{ t.login_hint }}</p>
-  <script async src="https://telegram.org/js/telegram-widget.js?22"
-          data-telegram-login="FridgeKeeper_MESSAGE_BOT"
-          data-size="large"
-          data-auth-url="{{ auth_url }}"
-          data-request-access="write"></script>
+  <a class="tg-login" href="{{ telegram_url }}" rel="nofollow">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9.8 15.2l-.4 4.2c.6 0 .8-.3 1.1-.6l2.6-2.5 5.4 3.9c1 .5 1.7.3 1.9-.9l3.5-16.4c.3-1.5-.5-2.1-1.5-1.7L1.6 9.6c-1.4.6-1.4 1.4-.3 1.7l5.4 1.7L19.7 5c.6-.4 1.2-.2.7.2z"/></svg>
+    <span>{{ t.login_button }}</span>
+  </a>
 </main>
 {% endblock %}

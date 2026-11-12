@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import urlencode
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from api.auth import SESSION_COOKIE, read_session_token
+from core.config import TELEGRAM_TOKEN
 from api.auth import router as auth_router
 from api.products import router as products_router
 from core.i18n import (
@@ -100,7 +102,13 @@ async def login_page(request: Request) -> HTMLResponse:
     """
     lang, save_lang = resolve_lang(request)
     auth_url = str(request.base_url).rstrip("/") + "/auth/login-widget"
-    return render(request, "login.html", lang, save_lang, {"auth_url": auth_url})
+    # Кнопка ведёт на страницу входа Telegram; она вернёт пользователя на auth_url с подписью.
+    origin = str(request.base_url).rstrip("/")
+    bot_id = TELEGRAM_TOKEN.split(":")[0] if TELEGRAM_TOKEN else ""
+    telegram_url = "https://oauth.telegram.org/auth?" + urlencode(
+        {"bot_id": bot_id, "origin": origin, "request_access": "write", "return_to": auth_url}
+    )
+    return render(request, "login.html", lang, save_lang, {"auth_url": auth_url, "telegram_url": telegram_url})
 
 
 @app.get("/app", response_class=HTMLResponse)
