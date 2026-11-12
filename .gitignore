@@ -26,3 +26,10 @@ unslop
 .pytest_cache
 .codex
 unslop-check
+fridgekeeper_backup.dump
+instance/database.db
+cloudflared/
+graphify-out/
+result.json
+test.png
+*.dump

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FridgeKeeper</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 16px; margin: 0; }
+    h1 { font-size: 22px; margin: 0 0 12px; }
+    h2 { font-size: 17px; margin: 0 0 8px; }
+    .hidden { display: none; }
+    .card { border: 1px solid #ccc; border-radius: 10px; padding: 12px; margin-top: 12px; }
+    .btn { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid #888;
+           background: #f4f4f4; width: 100%; box-sizing: border-box; margin-top: 8px; }
+    .btn-primary { background: #2a7ae2; color: #fff; border-color: #2a7ae2; }
+    input[type=text], input[type=date] { font: inherit; width: 100%; box-sizing: border-box;
+           padding: 8px; margin-top: 4px; }
+    label { display: block; margin-top: 8px; font-size: 14px; }
+    .warn { color: #b00020; font-weight: 600; margin-top: 8px; }
+    .muted { color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>FridgeKeeper</h1>
+  <p id="status">Входим…</p>
+
+  <section id="camera" class="hidden">
+    <div class="card">
+      <h2>Добавить продукт по фото</h2>
+      <p class="muted">Фото не сохраняется: оно читается и сразу отбрасывается.</p>
+      <input id="photo" type="file" accept="image/*" capture="environment" class="hidden">
+      <button id="snap" class="btn btn-primary" type="button">Сфотографировать</button>
+      <p id="scanStatus" class="muted"></p>
+
+      <div id="result" class="hidden">
+        <label>Название
+          <input id="name" type="text" maxlength="100">
+        </label>
+        <label>Годен до
+          <input id="expiry" type="date">
+        </label>
+        <p id="expiredWarn" class="warn hidden">Срок уже истёк</p>
+        <p id="hint" class="muted"></p>
+        <button id="yes" class="btn btn-primary" type="button">Да</button>
+        <button id="no" class="btn" type="button">Нет, введу сам</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const status = document.getElementById("status");
+    const tg = window.Telegram && window.Telegram.WebApp;
+    // Токен храним только в памяти страницы, не в localStorage.
+    let token = null;
+
+    const camera = document.getElementById("camera");
+    const photo = document.getElementById("photo");
+    const snap = document.getElementById("snap");
+    const scanStatus = document.getElementById("scanStatus");
+    const result = document.getElementById("result");
+    const nameInput = document.getElementById("name");
+    const expiryInput = document.getElementById("expiry");
+    const expiredWarn = document.getElementById("expiredWarn");
+    const hint = document.getElementById("hint");
+    const yesBtn = document.getElementById("yes");
+    const noBtn = document.getElementById("no");
+
+    // Предложение от распознавания; по нему решаем, источник «ocr» или «manual».
+    let suggested = { name: "", expiry: null };
+
+    function authHeaders() {
+      return { Authorization: "Bearer " + token };
+    }
+
+    function resetScan() {
+      result.classList.add("hidden");
+      expiredWarn.classList.add("hidden");
+      hint.textContent = "";
+      nameInput.value = "";
+      expiryInput.value = "";
+      suggested = { name: "", expiry: null };
+      photo.value = "";
+    }
+
+    async function login() {
+      if (!tg || !tg.initData) {
+        status.textContent = "Откройте эту страницу из Telegram.";
+        return;
+      }
+      tg.ready();
+      tg.expand();
+
+      const r = await fetch("/auth/mini-app", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ init_data: tg.initData }),
+      });
+      if (!r.ok) {
+        status.textContent = "Не удалось войти: " + r.status;
+        return;
+      }
+      token = (await r.json()).token;
+
+      const me = await fetch("/auth/me", { headers: authHeaders() });
+      if (!me.ok) {
+        status.textContent = "Ошибка проверки: " + me.status;
+        return;
+      }
+      status.textContent = "Вы вошли";
+      camera.classList.remove("hidden");
+    }
+
+    snap.addEventListener("click", () => photo.click());
+
+    photo.addEventListener("change", async () => {
+      const file = photo.files && photo.files[0];
+      if (!file) return;
+      resetScan();
+      scanStatus.textContent = "Распознаём…";
+      snap.disabled = true;
+
+      const form = new FormData();
+      form.append("file", file);
+      try {
+        const r = await fetch("/products/scan", {
+          method: "POST",
+          headers: authHeaders(),
+          body: form,
+        });
+        if (!r.ok) {
+          scanStatus.textContent = "Не удалось распознать: " + r.status;
+          return;
+        }
+        const data = await r.json();
+        suggested = { name: data.product_name || "", expiry: data.expiry_date };
+        nameInput.value = suggested.name;
+        expiryInput.value = suggested.expiry || "";
+        expiredWarn.classList.toggle("hidden", !data.expired);
+        hint.textContent = suggested.name
+          ? "Проверьте название и дату, затем подтвердите."
+          : "Название не распознано, введите его сами.";
+        result.classList.remove("hidden");
+        scanStatus.textContent = "";
+      } catch (err) {
+        scanStatus.textContent = "Ошибка сети: " + err.message;
+      } finally {
+        snap.disabled = false;
+      }
+    });
+
+    async function save(name, expiry, source) {
+      const r = await fetch("/products", {
+        method: "POST",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name,
+          expiry_date: expiry || null,
+          expiry_source: source,
+        }),
+      });
+      if (r.status === 201) {
+        resetScan();
+        scanStatus.textContent = "Сохранено: " + name;
+      } else {
+        scanStatus.textContent = "Не сохранено: " + r.status;
+      }
+    }
+
+    yesBtn.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      if (!name) {
+        hint.textContent = "Введите название.";
+        return;
+      }
+      // Источник «ocr», только если пользователь не менял предложенные значения.
+      const unchanged = name === suggested.name && (expiryInput.value || null) === suggested.expiry;
+      save(name, expiryInput.value, unchanged ? "ocr" : "manual");
+    });
+
+    noBtn.addEventListener("click", () => {
+      // «Нет» — очищаем предложение, пользователь вводит сам.
+      nameInput.value = "";
+      expiryInput.value = "";
+      expiredWarn.classList.add("hidden");
+      hint.textContent = "Введите название и дату вручную.";
+      suggested = { name: "", expiry: null };
+      nameInput.focus();
+    });
+
+    login();
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-"""Веб-приложение FridgeKeeper: лендинг и заглушка веб-интерфейса."""
+"""Веб-приложение FridgeKeeper: лендинг, вход и заглушка веб-интерфейса."""
 
 from __future__ import annotations
 
@@ -6,10 +6,13 @@ import json
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from api.auth import router as auth_router
+from api.products import router as products_router
 from core.i18n import (
     APP_URL,
     DEFAULT_LANG,
@@ -23,6 +26,15 @@ BASE_DIR = Path(__file__).resolve().parent
 LANG_COOKIE = "lang"
 
 app = FastAPI(title="FridgeKeeper", docs_url=None, redoc_url=None)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://fridge-keeper-eight.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type"],
+)
+app.include_router(auth_router)
+app.include_router(products_router)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
@@ -47,7 +59,13 @@ def resolve_lang(request: Request) -> tuple[str, bool]:
     return DEFAULT_LANG, False
 
 
-def render(request: Request, template: str, lang: str, save_lang: bool) -> HTMLResponse:
+def render(
+    request: Request,
+    template: str,
+    lang: str,
+    save_lang: bool,
+    extra: dict | None = None,
+) -> HTMLResponse:
     # JSON для скриптов демо; "<" экранируем, чтобы строки не закрыли тег <script>.
     js_json = json.dumps(get_js_strings(lang), ensure_ascii=False).replace("<", "\\u003c")
     context = {
@@ -58,6 +76,8 @@ def render(request: Request, template: str, lang: str, save_lang: bool) -> HTMLR
         "app_url": APP_URL,
         "bot_url": TELEGRAM_BOT_URL,
     }
+    if extra:
+        context.update(extra)
     response = templates.TemplateResponse(request, template, context)
     if save_lang:
         response.set_cookie(LANG_COOKIE, lang, max_age=60 * 60 * 24 * 365, path="/", samesite="lax")
@@ -70,10 +90,28 @@ async def landing(request: Request) -> HTMLResponse:
     return render(request, "landing.html", lang, save_lang)
 
 
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request) -> HTMLResponse:
+    """Страница входа с Telegram Login Widget.
+
+    Адрес возврата строится от текущего адреса сайта. За туннелем это https://…trycloudflare.com,
+    поэтому запускать uvicorn нужно с --proxy-headers (см. инструкцию).
+    """
+    lang, save_lang = resolve_lang(request)
+    auth_url = str(request.base_url).rstrip("/") + "/auth/login-widget"
+    return render(request, "login.html", lang, save_lang, {"auth_url": auth_url})
+
+
 @app.get("/app", response_class=HTMLResponse)
 async def app_placeholder(request: Request) -> HTMLResponse:
     lang, save_lang = resolve_lang(request)
     return render(request, "app_placeholder.html", lang, save_lang)
+
+
+@app.get("/mini", response_class=HTMLResponse)
+async def mini_app(request: Request) -> HTMLResponse:
+    """Страница Mini App. Отдаётся с ПК через туннель, поэтому CORS не нужен."""
+    return templates.TemplateResponse(request, "mini.html", {})
 
 
 if __name__ == "__main__":

@@ -1,0 +1,21 @@
+[project]
+name = "instance"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "aiogram>=3.31.0",
+    "aiosqlite>=0.22.1",
+    "alembic>=1.20.1",
+    "apscheduler>=3.11.3",
+    "asyncpg>=0.32.0",
+    "greenlet>=3.5.6",
+    "httpx>=0.28.1",
+    "pytest>=9.2.0",
+    "python-dotenv>=1.2.4",
+    "python-multipart>=0.0.33",
+    "sqlalchemy>=2.1.8",
+    "tzdata>=2026.6",
+]
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -2,7 +2,8 @@
 
 from .base import Base, utcnow
 from .link_token import LinkToken
+from .notification import NotificationLog
 from .product import Product
 from .user import User
 
-__all__ = ["Base", "utcnow", "User", "Product", "LinkToken"]
+__all__ = ["Base", "utcnow", "User", "Product", "LinkToken", "NotificationLog"]

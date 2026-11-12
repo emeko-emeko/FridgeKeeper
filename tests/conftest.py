@@ -1,8 +1,15 @@
 """Общие фикстуры тестов. Используется временная БД, а не instance/database.db."""
 
-import pytest_asyncio
+import os
 
-from core.database import init_db, make_session_factory
+import pytest_asyncio
+from dotenv import load_dotenv
+
+# Строка подключения к тестовой БД лежит в .env (TEST_DATABASE_URL), а не в коде
+load_dotenv()
+os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL", "")
+
+from core.database import init_db, make_session_factory  # noqa: E402
 
 
 @pytest_asyncio.fixture

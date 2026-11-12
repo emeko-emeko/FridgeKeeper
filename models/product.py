@@ -18,5 +18,7 @@ class Product(Base):
     expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     storage_advice: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    # добавить к существующим полям класса Product
+    expiry_source: Mapped[str | None] = mapped_column(String(16), nullable=True)  # "ocr" | "manual" | "bot"
 
     user: Mapped["User | None"] = relationship(back_populates="products")  # noqa: F821

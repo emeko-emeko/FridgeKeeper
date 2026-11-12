@@ -12,6 +12,9 @@ load_dotenv(BASE_DIR / ".env")
 
 # Токен Telegram-бота (получить у @BotFather)
 TELEGRAM_TOKEN: str = os.getenv("TELEGRAM_TOKEN", "")
+# Yandex Vision (распознавание текста на этикетке)
+YANDEX_API_KEY: str = os.getenv("YANDEX_API_KEY", "")
+YANDEX_FOLDER_ID: str = os.getenv("YANDEX_FOLDER_ID", "")
 
 # Строка подключения SQLAlchemy (асинхронный драйвер aiosqlite)
 DATABASE_URL: str = os.getenv(

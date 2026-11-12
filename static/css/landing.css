@@ -694,3 +694,61 @@ button { font: inherit; }
   .rise, .js .reveal { opacity: 1; transform: none; }
   .hl__line path { stroke-dashoffset: 0; }
 }
+/* ДОБАВИТЬ В КОНЕЦ landing.css (переопределяет старые правила) */
+
+/* Холодильник: чистый фасад, дверцы без щели и с ручками у шва */
+.fridge { perspective: 1400px; }
+.fridge__inside { gap: 2px; padding: 14px 12px 12px; }
+.shelf--drawer { flex: 1.25; }
+.door {
+  display: block; padding: 0; border: 0; cursor: pointer; font: inherit;
+  width: calc(50% - 14px);
+  background: linear-gradient(160deg, #f7f2e7, #dcd3c1);
+  box-shadow: inset 0 0 0 1px rgba(43, 34, 30, 0.08);
+  transition: transform 800ms var(--ease), box-shadow 500ms ease, filter 250ms ease;
+}
+.door--left  { border-radius: 18px 3px 3px 18px; }
+.door--right { border-radius: 3px 18px 18px 3px; }
+.door--left .door__handle  { right: 12px; }
+.door--right .door__handle { left: 12px; }
+.door__handle { width: 7px; background: var(--ink-3); animation: nudge 2.4s ease-in-out infinite; }
+.fridge.is-open .door__handle { animation: none; }
+@keyframes nudge { 50% { transform: scaleY(1.12); } }
+.fridge:not(.is-open) .door:hover { filter: brightness(1.04); }
+.fridge:not(.is-open) .prod { pointer-events: none; }
+.fridge.is-open .door--left  { transform: perspective(1200px) rotateY(-78deg); }
+.fridge.is-open .door--right { transform: perspective(1200px) rotateY(78deg); }
+:root[data-theme="dark"] .door { background: linear-gradient(160deg, #473d33, #2e271f); }
+.prod[aria-pressed="true"] { translate: var(--x, 0) -8px; scale: 1.1; filter: drop-shadow(0 8px 10px rgba(43, 34, 30, 0.25)); }
+.prod--alert .prod__alert { z-index: 2; }
+
+/* Шкала свежести */
+.fridge__info { display: grid; justify-items: center; gap: 12px; min-height: 52px; }
+.meter { display: block; width: 160px; height: 6px; border-radius: 99px; background: var(--line-strong); overflow: hidden; transition: opacity 300ms ease; }
+.meter b { display: block; height: 100%; width: var(--w, 100%); border-radius: inherit; background: var(--c, var(--green)); transition: width 600ms var(--ease), background-color 300ms ease; }
+.meter--wide { width: 100%; margin-top: var(--s3); }
+
+/* Проблемы: без карточек */
+.issues { list-style: none; margin: var(--s5) 0 0; padding: 0; display: grid; gap: var(--s4); }
+.issues li { display: flex; align-items: center; gap: var(--s3); padding-top: var(--s3); border-top: 1px solid rgba(255, 250, 241, 0.16); }
+.issues svg { width: 38px; height: 38px; flex: none; fill: none; stroke: var(--yellow); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform 500ms var(--spring); }
+.issues li:hover svg { transform: rotate(-12deg) scale(1.15); }
+.issues h3 { font-family: var(--font-display); font-size: 1.375rem; }
+@media (min-width: 900px) {
+  .issues { grid-template-columns: repeat(3, 1fr); }
+  .issues li { flex-direction: column; align-items: flex-start; }
+}
+
+/* Вкладки: только заголовки */
+.feature p { display: none !important; }
+.feature__title { margin-bottom: 0; }
+
+/* Чат кликабельный */
+.chat { cursor: pointer; }
+
+/* FAQ: простой список */
+.faq { gap: 0; }
+.faq__item { background: none; border: 0; border-bottom: 1px solid var(--line-strong); border-radius: 0; box-shadow: none; }
+.faq__item:hover { transform: none; box-shadow: none; }
+.faq__item summary { padding: var(--s3) 0; }
+.faq__item p { padding: 0 0 var(--s3); }

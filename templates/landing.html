@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 
+{% macro p(hint, fresh, style='', alert=false) -%}
+<button class="prod" type="button" data-hint="{{ hint }}" data-fresh="{{ fresh }}" aria-label="{{ hint }}" aria-pressed="false" style="{{ style }}"><svg viewBox="0 0 60 60" aria-hidden="true">{{ caller() }}</svg>{% if alert %}<span class="prod__alert" aria-hidden="true">!</span>{% endif %}</button>
+{%- endmacro %}
+
 {% block content %}
 <main>
 
-  <!-- HERO: по центру, окно холодильника под текстом -->
-    <!-- HERO -->
+  <!-- HERO -->
   <section class="hero">
     <div class="container">
       <div class="hero__copy">
@@ -12,162 +15,57 @@
         <h1 class="hero__title rise rise--1">
           {{ t.hero_title_pre }} <span class="hl">{{ t.hero_title_hl }}<svg class="hl__line" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 Q 50 2 100 7 T 198 6"/></svg></span> {{ t.hero_title_post }}
         </h1>
-        <p class="hero__sub rise rise--2">{{ t.hero_sub }}</p>
         <div class="hero__actions rise rise--3">
           <a class="btn btn--primary btn--arrow" href="{{ app_url }}"><span>{{ t.cta_primary }}</span><i class="arrow" aria-hidden="true"></i></a>
           <a class="btn btn--ghost" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.cta_secondary }}</a>
         </div>
       </div>
 
-      <!-- ХОЛОДИЛЬНИК -->
-            <!-- ХОЛОДИЛЬНИК -->
+      <!-- ХОЛОДИЛЬНИК: двери закрыты = чистый фасад, продукты только внутри -->
       <div class="fridge-wrap rise rise--4">
-        <div class="fridge" data-fridge tabindex="0" role="button" aria-expanded="false" aria-label="{{ t.hero_preview_label }}">
-
-          <!-- Внутренность: 6 полок, нижняя (овощной ящик) больше остальных -->
+        <div class="fridge" data-fridge>
           <div class="fridge__inside">
             <div class="fridge__light" aria-hidden="true"></div>
 
             <div class="shelf">
-              <button class="prod" type="button" data-hint="{{ t.shelf_candy_hint }}" aria-label="{{ t.shelf_candy_hint }}" style="--x:-6px;--r:-10deg;--z:2">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="44" r="12" fill="#f2a1b5" stroke="#2b221e" stroke-width="1.4"/><path d="M18 44 L8 36 V52 Z M42 44 L52 36 V52 Z" fill="#f7c6d3" stroke="#2b221e" stroke-width="1.2"/></svg>
-              </button>
-              <button class="prod" type="button" data-hint="{{ t.shelf_chocolate_hint }}" aria-label="{{ t.shelf_chocolate_hint }}" style="--x:10px;--r:6deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><rect x="10" y="32" width="40" height="26" rx="3" fill="#6b4029" stroke="#2b221e" stroke-width="1.4"/><path d="M10 45 H50 M30 32 V58" stroke="#9a6a4c" stroke-width="1.2"/></svg>
-              </button>
+              {% call p(t.shelf_milk_hint, 40, '--r:2deg') %}<path d="M16 22H44V58H16Z" fill="#fffaf1" stroke="#2b221e" stroke-width="1.4"/><path d="M16 22L24 10H36L44 22Z" fill="#fffaf1" stroke="#2b221e" stroke-width="1.4"/><rect x="16" y="38" width="28" height="12" fill="#5a9b6b"/>{% endcall %}
+              {% call p(t.shelf_yogurt_hint, 25, '--r:-4deg') %}<path d="M14 28H46L42 58H18Z" fill="#fbeec0" stroke="#2b221e" stroke-width="1.4"/><rect x="13" y="21" width="34" height="8" rx="2" fill="#5a9b6b" stroke="#2b221e" stroke-width="1.4"/>{% endcall %}
+              {% call p(t.shelf_kefir_hint, 70, '--r:3deg') %}<path d="M16 22H44V58H16Z" fill="#fffaf1" stroke="#2b221e" stroke-width="1.4"/><path d="M16 22L24 12H36L44 22Z" fill="#fffaf1" stroke="#2b221e" stroke-width="1.4"/><rect x="16" y="38" width="28" height="12" fill="#8fb8e0"/>{% endcall %}
             </div>
 
             <div class="shelf">
-              <button class="prod" type="button" data-hint="{{ t.shelf_milk_hint }}" aria-label="{{ t.shelf_milk_hint }}" style="--x:-4px;--r:2deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M16 22 L44 22 L44 58 L16 58 Z" fill="#fffaf1" stroke="#2b221e" stroke-width="1.4"/><path d="M16 22 L24 10 L36 10 L44 22 Z" fill="#fffaf1" stroke="#2b221e" stroke-width="1.4"/><rect x="16" y="38" width="28" height="12" fill="#5a9b6b"/></svg>
-              </button>
-              <button class="prod" type="button" data-hint="{{ t.shelf_yogurt_hint }}" aria-label="{{ t.shelf_yogurt_hint }}" style="--x:8px;--r:-4deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M14 28 L46 28 L42 58 L18 58 Z" fill="#fbeec0" stroke="#2b221e" stroke-width="1.4"/><rect x="13" y="21" width="34" height="8" rx="2" fill="#5a9b6b" stroke="#2b221e" stroke-width="1.4"/></svg>
-              </button>
+              {% call p(t.shelf_sausage_hint, 60, '--r:-2deg') %}<rect x="3" y="36" width="54" height="22" rx="11" fill="#d9675a" stroke="#2b221e" stroke-width="1.4"/><path d="M16 36V58M30 36V58M44 36V58" stroke="#b44c42"/>{% endcall %}
+              {% call p(t.shelf_cheese_hint, 35, '--r:-4deg') %}<polygon points="6,38 36,20 54,32 24,50" fill="#fbd65a" stroke="#2b221e" stroke-width="1.2"/><polygon points="6,38 24,50 24,58 6,46" fill="#e9b33f" stroke="#2b221e" stroke-width="1.2"/><polygon points="24,50 54,32 54,40 24,58" fill="#d99f2c" stroke="#2b221e" stroke-width="1.2"/><circle cx="18" cy="38" r="1.8" fill="#fff4b0"/><circle cx="32" cy="32" r="1.5" fill="#fff4b0"/>{% endcall %}
+              {% call p(t.shelf_butter_hint, 80, '--r:-3deg') %}<rect x="8" y="40" width="44" height="18" rx="2" fill="#fbeec0" stroke="#2b221e" stroke-width="1.4"/><rect x="8" y="40" width="44" height="5" fill="#f2d26b"/>{% endcall %}
             </div>
 
             <div class="shelf">
-              <button class="prod" type="button" data-hint="{{ t.shelf_sausage_hint }}" aria-label="{{ t.shelf_sausage_hint }}" style="--x:-6px;--r:-2deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><rect x="3" y="36" width="54" height="22" rx="11" fill="#d9675a" stroke="#2b221e" stroke-width="1.4"/><path d="M16 36 V58 M30 36 V58 M44 36 V58" stroke="#b44c42" stroke-width="1"/></svg>
-              </button>
-              <button class="prod" type="button" data-hint="{{ t.shelf_cheese_hint }}" aria-label="{{ t.shelf_cheese_hint }}" style="--x:2px;--r:-4deg;--z:2">
-                <svg viewBox="0 0 60 60" aria-hidden="true">
-                  <polygon points="6,38 36,20 54,32 24,50" fill="#fbd65a" stroke="#2b221e" stroke-width="1.2"/>
-                  <polygon points="6,38 24,50 24,58 6,46" fill="#e9b33f" stroke="#2b221e" stroke-width="1.2"/>
-                  <polygon points="24,50 54,32 54,40 24,58" fill="#d99f2c" stroke="#2b221e" stroke-width="1.2"/>
-                  <circle cx="18" cy="38" r="1.8" fill="#fff4b0"/><circle cx="30" cy="34" r="1.5" fill="#fff4b0"/><circle cx="40" cy="30" r="1.3" fill="#fff4b0"/>
-                  <circle cx="34" cy="48" r="1.4" fill="#f7e08a"/><circle cx="46" cy="42" r="1.2" fill="#f7e08a"/>
-                </svg>
-              </button>
-              <button class="prod" type="button" data-hint="{{ t.shelf_cheese_hint }}" aria-label="{{ t.shelf_cheese_hint }}" style="--x:6px;--r:9deg;--mx:-16px;--z:3">
-                <svg viewBox="0 0 60 60" aria-hidden="true">
-                  <polygon points="6,38 36,20 54,32 24,50" fill="#fbd65a" stroke="#2b221e" stroke-width="1.2"/>
-                  <polygon points="6,38 24,50 24,58 6,46" fill="#e9b33f" stroke="#2b221e" stroke-width="1.2"/>
-                  <polygon points="24,50 54,32 54,40 24,58" fill="#d99f2c" stroke="#2b221e" stroke-width="1.2"/>
-                  <circle cx="20" cy="40" r="1.8" fill="#fff4b0"/><circle cx="34" cy="30" r="1.5" fill="#fff4b0"/>
-                  <circle cx="44" cy="40" r="1.3" fill="#f7e08a"/>
-                </svg>
-              </button>
+              {% call p(t.shelf_bread_hint, 10, '--r:-5deg', true) %}<path d="M8 40Q8 22 30 22Q52 22 52 40V58H8Z" fill="#e9a25a" stroke="#2b221e" stroke-width="1.4"/><path d="M18 34L20 40M30 30L32 38M42 34L44 40" stroke="#2b221e" stroke-width="1.2"/>{% endcall %}
+              {% call p(t.shelf_juice_hint, 55, '--r:4deg') %}<path d="M16 20H44V58H16Z" fill="#f5a963" stroke="#2b221e" stroke-width="1.4"/><path d="M16 20L30 8L44 20Z" fill="#e8934a" stroke="#2b221e" stroke-width="1.4"/>{% endcall %}
+              {% call p(t.shelf_jam_hint, 90, '--r:-3deg') %}<rect x="14" y="26" width="32" height="32" rx="6" fill="#b5345a" stroke="#2b221e" stroke-width="1.4"/><rect x="14" y="20" width="32" height="8" rx="2" fill="#f2d26b" stroke="#2b221e" stroke-width="1.2"/>{% endcall %}
             </div>
 
-            <div class="shelf">
-              <button class="prod" type="button" data-hint="{{ t.shelf_butter_hint }}" aria-label="{{ t.shelf_butter_hint }}" style="--x:-2px;--r:-3deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><rect x="8" y="40" width="44" height="18" rx="2" fill="#fbeec0" stroke="#2b221e" stroke-width="1.4"/><rect x="8" y="40" width="44" height="5" fill="#f2d26b"/></svg>
-              </button>
-              <button class="prod prod--alert" type="button" data-hint="{{ t.shelf_bread_hint }}" aria-label="{{ t.shelf_bread_hint }}" data-alert style="--mx:-10px;--r:-6deg;--x:4px">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M8 40 Q8 22 30 22 Q52 22 52 40 V58 H8 Z" fill="#e9a25a" stroke="#2b221e" stroke-width="1.4"/><path d="M18 34 L20 40 M30 30 L32 38 M42 34 L44 40" stroke="#2b221e" stroke-width="1.2"/></svg>
-                <span class="prod__alert" aria-hidden="true">!</span>
-              </button>
-            </div>
-
-            <div class="shelf">
-              <button class="prod" type="button" data-hint="{{ t.shelf_juice_hint }}" aria-label="{{ t.shelf_juice_hint }}" style="--x:-8px;--r:4deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M16 20 L44 20 L44 58 L16 58 Z" fill="#f5a963" stroke="#2b221e" stroke-width="1.4"/><path d="M16 20 L30 8 L44 20 Z" fill="#e8934a" stroke="#2b221e" stroke-width="1.4"/></svg>
-              </button>
-              <button class="prod" type="button" data-hint="{{ t.shelf_soda_hint }}" aria-label="{{ t.shelf_soda_hint }}" style="--x:10px;--r:-3deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M24 12 H36 V20 Q44 26 44 36 V58 H16 V36 Q16 26 24 20 Z" fill="#4a9e8e" stroke="#2b221e" stroke-width="1.4"/><rect x="24" y="8" width="12" height="5" fill="#2b221e"/><rect x="19" y="38" width="22" height="12" fill="#f5a963" opacity=".85"/></svg>
-              </button>
-            </div>
-
-            <!-- Нижний овощной ящик: самая большая полка -->
             <div class="shelf shelf--drawer">
-              <button class="prod" type="button" data-hint="{{ t.shelf_cucumber_hint }}" aria-label="{{ t.shelf_cucumber_hint }}" style="--x:-6px;--r:-5deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><ellipse cx="30" cy="48" rx="26" ry="8" fill="#5a9b6b" stroke="#2b221e" stroke-width="1.4"/><path d="M14 46 V51 M24 44 V52 M36 44 V52 M46 46 V51" stroke="#3f7a4e" stroke-width="1"/></svg>
-              </button>
-              <button class="prod" type="button" data-hint="{{ t.shelf_broccoli_hint }}" aria-label="{{ t.shelf_broccoli_hint }}" style="--x:6px;--r:3deg;--z:2">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><rect x="26" y="42" width="8" height="16" fill="#9ccf8a" stroke="#2b221e" stroke-width="1.2"/><circle cx="20" cy="38" r="9" fill="#4f9a62" stroke="#2b221e" stroke-width="1.2"/><circle cx="40" cy="38" r="9" fill="#4f9a62" stroke="#2b221e" stroke-width="1.2"/><circle cx="30" cy="30" r="10" fill="#5fa86e" stroke="#2b221e" stroke-width="1.2"/></svg>
-              </button>
-              <button class="prod" type="button" data-hint="{{ t.shelf_greens_hint }}" aria-label="{{ t.shelf_greens_hint }}" style="--x:-14px;--r:-2deg;--mx:-8px">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M8 58 Q12 36 26 28 Q22 44 24 58 Z" fill="#6fb37b" stroke="#2b221e" stroke-width="1.2"/><path d="M24 58 Q28 32 40 24 Q36 44 38 58 Z" fill="#4f9a62" stroke="#2b221e" stroke-width="1.2"/><path d="M36 58 Q44 40 52 38 Q48 50 50 58 Z" fill="#8cc78f" stroke="#2b221e" stroke-width="1.2"/></svg>
-              </button>
-              <button class="prod" type="button" data-hint="{{ t.shelf_tomato_hint }}" aria-label="{{ t.shelf_tomato_hint }}" style="--x:4px;--r:-6deg">
-                <svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="22" cy="44" r="11" fill="#c4553b" stroke="#2b221e" stroke-width="1.2"/><circle cx="40" cy="46" r="10" fill="#d4604a" stroke="#2b221e" stroke-width="1.2"/><path d="M20 34 L24 30 L28 34 Z" fill="#5a9b6b"/></svg>
-              </button>
+              {% call p(t.shelf_cucumber_hint, 45, '--r:-5deg') %}<ellipse cx="30" cy="48" rx="26" ry="8" fill="#5a9b6b" stroke="#2b221e" stroke-width="1.4"/>{% endcall %}
+              {% call p(t.shelf_broccoli_hint, 30, '--r:3deg') %}<rect x="26" y="42" width="8" height="16" fill="#9ccf8a" stroke="#2b221e" stroke-width="1.2"/><circle cx="20" cy="38" r="9" fill="#4f9a62" stroke="#2b221e" stroke-width="1.2"/><circle cx="40" cy="38" r="9" fill="#4f9a62" stroke="#2b221e" stroke-width="1.2"/><circle cx="30" cy="30" r="10" fill="#5fa86e" stroke="#2b221e" stroke-width="1.2"/>{% endcall %}
+              {% call p(t.shelf_greens_hint, 20, '--r:-2deg') %}<path d="M8 58Q12 36 26 28Q22 44 24 58Z" fill="#6fb37b" stroke="#2b221e" stroke-width="1.2"/><path d="M24 58Q28 32 40 24Q36 44 38 58Z" fill="#4f9a62" stroke="#2b221e" stroke-width="1.2"/>{% endcall %}
+              {% call p(t.shelf_tomato_hint, 65, '--r:-6deg') %}<circle cx="22" cy="44" r="11" fill="#c4553b" stroke="#2b221e" stroke-width="1.2"/><circle cx="40" cy="46" r="10" fill="#d4604a" stroke="#2b221e" stroke-width="1.2"/>{% endcall %}
             </div>
           </div>
 
-          <!-- Левая дверца: 4 полки -->
-          <div class="door door--left">
-            <span class="door__handle" aria-hidden="true"></span>
-            <div class="door__bins">
-              <div class="bin">
-                <button class="prod prod--door" type="button" data-hint="{{ t.shelf_ketchup_hint }}" aria-label="{{ t.shelf_ketchup_hint }}">
-                  <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M22 20 H38 V26 Q44 30 44 40 V58 H16 V40 Q16 30 22 26 Z" fill="#d6402c" stroke="#2b221e" stroke-width="1.4"/><rect x="25" y="12" width="10" height="8" fill="#2b221e"/><rect x="20" y="38" width="20" height="10" fill="#fffaf1"/></svg>
-                </button>
-                <button class="prod prod--door" type="button" data-hint="{{ t.shelf_mayo_hint }}" aria-label="{{ t.shelf_mayo_hint }}">
-                  <svg viewBox="0 0 60 60" aria-hidden="true"><rect x="14" y="30" width="32" height="28" rx="4" fill="#fffdf6" stroke="#2b221e" stroke-width="1.4"/><rect x="14" y="22" width="32" height="8" rx="2" fill="#c4553b" stroke="#2b221e" stroke-width="1.2"/><rect x="18" y="38" width="24" height="10" fill="#f2d26b"/></svg>
-                </button>
-              </div>
-              <div class="bin">
-                <button class="prod prod--door" type="button" data-hint="{{ t.shelf_mustard_hint }}" aria-label="{{ t.shelf_mustard_hint }}">
-                  <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M22 24 H38 V30 Q44 34 44 42 V58 H16 V42 Q16 34 22 30 Z" fill="#f2c94c" stroke="#2b221e" stroke-width="1.4"/><rect x="24" y="16" width="12" height="8" fill="#2b221e"/></svg>
-                </button>
-                <button class="prod prod--door" type="button" data-hint="{{ t.shelf_water_hint }}" aria-label="{{ t.shelf_water_hint }}">
-                  <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M24 10 H36 V18 Q42 22 42 32 V58 H18 V32 Q18 22 24 18 Z" fill="#cfe7f0" stroke="#2b221e" stroke-width="1.4"/><rect x="18" y="36" width="24" height="10" fill="#8fc5d6" opacity=".7"/></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Правая дверца: лоток для яиц сверху и 3 полки -->
-          <div class="door door--right">
-            <span class="door__handle" aria-hidden="true"></span>
-            <button class="prod prod--tray" type="button" data-hint="{{ t.shelf_eggs_hint }}" aria-label="{{ t.shelf_eggs_hint }}">
-              <svg viewBox="0 0 120 44" aria-hidden="true">
-                <rect x="2" y="18" width="116" height="24" rx="6" fill="#e6dccb" stroke="#2b221e" stroke-width="1.2"/>
-                <ellipse cx="16" cy="16" rx="9" ry="12" fill="#fffaf1" stroke="#2b221e" stroke-width="1.2"/>
-                <ellipse cx="34" cy="16" rx="9" ry="12" fill="#fffaf1" stroke="#2b221e" stroke-width="1.2"/>
-                <ellipse cx="52" cy="16" rx="9" ry="12" fill="#fffaf1" stroke="#2b221e" stroke-width="1.2"/>
-                <ellipse cx="70" cy="16" rx="9" ry="12" fill="#fffaf1" stroke="#2b221e" stroke-width="1.2"/>
-                <ellipse cx="88" cy="16" rx="9" ry="12" fill="#fffaf1" stroke="#2b221e" stroke-width="1.2"/>
-                <ellipse cx="106" cy="16" rx="9" ry="12" fill="#fffaf1" stroke="#2b221e" stroke-width="1.2"/>
-              </svg>
-            </button>
-            <div class="door__bins">
-              <div class="bin">
-                <button class="prod prod--door" type="button" data-hint="{{ t.shelf_kefir_hint }}" aria-label="{{ t.shelf_kefir_hint }}">
-                  <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M16 22 L44 22 L44 58 L16 58 Z" fill="#fffaf1" stroke="#2b221e" stroke-width="1.4"/><path d="M16 22 L24 12 L36 12 L44 22 Z" fill="#fffaf1" stroke="#2b221e" stroke-width="1.4"/><rect x="16" y="38" width="28" height="12" fill="#8fb8e0"/></svg>
-                </button>
-                <button class="prod prod--door" type="button" data-hint="{{ t.shelf_pickles_hint }}" aria-label="{{ t.shelf_pickles_hint }}">
-                  <svg viewBox="0 0 60 60" aria-hidden="true"><rect x="16" y="20" width="28" height="38" rx="4" fill="#9ccf8a" stroke="#2b221e" stroke-width="1.4"/><rect x="16" y="20" width="28" height="8" fill="#c4553b" stroke="#2b221e" stroke-width="1.2"/></svg>
-                </button>
-              </div>
-              <div class="bin">
-                <button class="prod prod--door" type="button" data-hint="{{ t.shelf_jam_hint }}" aria-label="{{ t.shelf_jam_hint }}">
-                  <svg viewBox="0 0 60 60" aria-hidden="true"><rect x="14" y="26" width="32" height="32" rx="6" fill="#b5345a" stroke="#2b221e" stroke-width="1.4"/><rect x="14" y="20" width="32" height="8" rx="2" fill="#f2d26b" stroke="#2b221e" stroke-width="1.2"/></svg>
-                </button>
-                <button class="prod prod--door" type="button" data-hint="{{ t.shelf_chocolate_hint }}" aria-label="{{ t.shelf_chocolate_hint }}">
-                  <svg viewBox="0 0 60 60" aria-hidden="true"><rect x="10" y="34" width="40" height="22" rx="3" fill="#6b4029" stroke="#2b221e" stroke-width="1.4"/><path d="M10 45 H50" stroke="#9a6a4c" stroke-width="1.2"/></svg>
-                </button>
-              </div>
-              <div class="bin"></div>
-            </div>
-          </div>
+          <button class="door door--left" type="button" aria-expanded="false" aria-label="{{ t.hero_preview_label }}"><span class="door__handle" aria-hidden="true"></span></button>
+          <button class="door door--right" type="button" aria-expanded="false" aria-label="{{ t.hero_preview_label }}"><span class="door__handle" aria-hidden="true"></span></button>
         </div>
-        <p class="fridge__info" data-info-line aria-live="polite">{{ t.hero_preview_default_info }}</p>
-      </div>
 
-  <!-- Бегущая строка: два одинаковых набора, сдвиг на половину ширины даёт бесшовный цикл -->
+        <div class="fridge__info">
+          <span data-info-line aria-live="polite">{{ t.hero_preview_default_info }}</span>
+          <i class="meter" aria-hidden="true"><b data-meter></b></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Бегущая строка -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
       {% for _ in range(4) %}
@@ -176,32 +74,20 @@
     </div>
   </div>
 
-  <!-- ПРОБЛЕМА: тёмная секция, как «Sound familiar» у Ferndesk -->
+  <!-- ПРОБЛЕМЫ: только иконка и заголовок, без карточек -->
   <section class="section section--dark" id="problems">
     <div class="container">
       <p class="eyebrow eyebrow--soft reveal">{{ t.problems_eyebrow }}</p>
       <h2 class="section__title reveal">{{ t.problems_title }}</h2>
-      <div class="cards cards--3">
-        <article class="card card--dark tilt reveal">
-          <span class="card__num">01</span>
-          <h3>{{ t.problem1_title }}</h3>
-          <p>{{ t.problem1_text }}</p>
-        </article>
-        <article class="card card--dark tilt reveal">
-          <span class="card__num">02</span>
-          <h3>{{ t.problem2_title }}</h3>
-          <p>{{ t.problem2_text }}</p>
-        </article>
-        <article class="card card--dark tilt reveal">
-          <span class="card__num">03</span>
-          <h3>{{ t.problem3_title }}</h3>
-          <p>{{ t.problem3_text }}</p>
-        </article>
-      </div>
+      <ul class="issues">
+        <li class="reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><path d="M4 20L20 4"/></svg><h3>{{ t.problem1_title }}</h3></li>
+        <li class="reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg><h3>{{ t.problem2_title }}</h3></li>
+        <li class="reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16l-1.5 8a2 2 0 0 1-2 1.600H7.500a2 2 0 0 1-2-1.600z"/><path d="M9 7c0-2 2-2 2-4M14 7c0-2 2-2 2-4"/></svg><h3>{{ t.problem3_title }}</h3></li>
+      </ul>
     </div>
   </section>
 
-  <!-- ЦЕЛЬ: этикетка и текст в пропорции 1 : 1,618 -->
+  <!-- ЦЕЛЬ: этикетка со шкалой свежести -->
   <section class="section">
     <div class="container split split--golden">
       <div class="label tilt reveal">
@@ -211,75 +97,26 @@
           <div><dt>{{ t.label_opened_key }}</dt><dd>{{ t.label_opened_val }}</dd></div>
           <div class="is-hot"><dt>{{ t.label_best_key }}</dt><dd>{{ t.label_best_val }}</dd></div>
           <div><dt>{{ t.label_left_key }}</dt><dd>{{ t.label_left_val }}</dd></div>
-          <div><dt>{{ t.label_energy_key }}</dt><dd>{{ t.label_energy_val }}</dd></div>
-          <div><dt>{{ t.label_ingredients_key }}</dt><dd>{{ t.label_ingredients_val }}</dd></div>
         </dl>
+        <i class="meter meter--wide" aria-hidden="true"><b style="--w:22%;--c:var(--accent)"></b></i>
       </div>
       <div class="goal reveal">
         <p class="eyebrow">{{ t.goal_eyebrow }}</p>
         <h2 class="section__title">{{ t.goal_title }}</h2>
-        <p class="section__lead">{{ t.goal_text }}</p>
       </div>
     </div>
   </section>
 
-  <!-- КАК ЭТО ВЫГЛЯДИТ: три карточки, у каждой своя мини-иллюстрация -->
+  <!-- ВСЁ СВЯЗАНО: вкладки и превью -->
   <section class="section section--tint" id="steps">
-    <div class="container">
-      <p class="eyebrow reveal">{{ t.steps_eyebrow }}</p>
-      <h2 class="section__title reveal">{{ t.steps_title }}</h2>
-      <div class="cards cards--3 steps">
-        <article class="card tilt reveal">
-          <span class="step__num">01</span>
-          <div class="mini">
-            <span class="chip chip--green">{{ t.mini_milk }}</span>
-            <span class="chip chip--green">{{ t.mini_yogurt }}</span>
-          </div>
-          <h3>{{ t.step1_title }}</h3>
-          <p>{{ t.step1_text }}</p>
-        </article>
-        <article class="card tilt reveal">
-          <span class="step__num">02</span>
-          <div class="mini">
-            <span class="chip chip--orange">{{ t.mini_cheese }} <em>{{ t.mini_days_soon }}</em></span>
-            <span class="chip chip--green">{{ t.mini_curd }}</span>
-          </div>
-          <h3>{{ t.step2_title }}</h3>
-          <p>{{ t.step2_text }}</p>
-        </article>
-        <article class="card tilt reveal">
-          <span class="step__num">03</span>
-          <div class="mini">
-            <span class="chip chip--accent">{{ t.mini_bread }}</span>
-            <span class="chip chip--yellow">{{ t.mini_eggs }}</span>
-          </div>
-          <h3>{{ t.step3_title }}</h3>
-          <p>{{ t.step3_text }}</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ВСЁ СВЯЗАНО: табы и превью -->
-  <section class="section">
     <div class="container split">
       <div class="reveal">
         <p class="eyebrow">{{ t.connected_eyebrow }}</p>
         <h2 class="section__title">{{ t.connected_title }}</h2>
-        <p class="section__lead">{{ t.connected_lead }}</p>
         <ul class="features" role="tablist">
-          <li class="feature is-active" data-feature="1" tabindex="0" role="tab" aria-selected="true">
-            <span class="feature__title">{{ t.feature1_title }}</span>
-            <p>{{ t.feature1_text }}</p>
-          </li>
-          <li class="feature" data-feature="2" tabindex="0" role="tab" aria-selected="false">
-            <span class="feature__title">{{ t.feature2_title }}</span>
-            <p>{{ t.feature2_text }}</p>
-          </li>
-          <li class="feature" data-feature="3" tabindex="0" role="tab" aria-selected="false">
-            <span class="feature__title">{{ t.feature3_title }}</span>
-            <p>{{ t.feature3_text }}</p>
-          </li>
+          <li class="feature is-active" data-feature="1" tabindex="0" role="tab" aria-selected="true"><span class="feature__title">{{ t.feature1_title }}</span></li>
+          <li class="feature" data-feature="2" tabindex="0" role="tab" aria-selected="false"><span class="feature__title">{{ t.feature2_title }}</span></li>
+          <li class="feature" data-feature="3" tabindex="0" role="tab" aria-selected="false"><span class="feature__title">{{ t.feature3_title }}</span></li>
         </ul>
       </div>
       <div class="preview tilt reveal" aria-live="polite">
@@ -299,18 +136,17 @@
     </div>
   </section>
 
-  <!-- TELEGRAM: чат появляется пузырь за пузырём -->
-  <section class="section section--tint">
+  <!-- TELEGRAM: клик по чату проигрывает его заново -->
+  <section class="section">
     <div class="container split">
       <div class="reveal">
         <p class="eyebrow">{{ t.bot_eyebrow }}</p>
         <h2 class="section__title">{{ t.bot_title }}</h2>
-        <p class="section__lead">{{ t.bot_text }}</p>
-        <div class="hero__actions">
+        <div class="hero__actions" style="justify-content:flex-start">
           <a class="btn btn--primary btn--arrow" href="{{ bot_url }}" target="_blank" rel="noopener"><span>{{ t.app_bot }}</span><i class="arrow" aria-hidden="true"></i></a>
         </div>
       </div>
-      <div class="chat reveal" aria-hidden="true">
+      <div class="chat reveal" data-chat>
         <div class="chat__head"><span class="chat__avatar"></span>FridgeKeeper</div>
         <p class="bubble bubble--me" style="--d:0">{{ t.bot_user1 }}</p>
         <p class="bubble" style="--d:1">{{ t.bot_reply1 }}</p>
@@ -320,30 +156,7 @@
     </div>
   </section>
 
-  <!-- ОТЗЫВЫ -->
-  <section class="section" id="reviews">
-    <div class="container">
-      <p class="eyebrow reveal">{{ t.reviews_eyebrow }}</p>
-      <h2 class="section__title reveal">{{ t.reviews_title }}</h2>
-      <div class="reviews">
-        <figure class="review card tilt reveal">
-          <blockquote>{{ t.review1_text }}</blockquote>
-          <figcaption><span class="avatar avatar--green">{{ t.review1_name[0] }}</span><span><strong>{{ t.review1_name }}</strong><small>{{ t.review1_role }}</small></span></figcaption>
-        </figure>
-        <figure class="review card review--raised tilt reveal">
-          <blockquote>{{ t.review2_text }}</blockquote>
-          <figcaption><span class="avatar avatar--orange">{{ t.review2_name[0] }}</span><span><strong>{{ t.review2_name }}</strong><small>{{ t.review2_role }}</small></span></figcaption>
-        </figure>
-        <figure class="review card tilt reveal">
-          <blockquote>{{ t.review3_text }}</blockquote>
-          <figcaption><span class="avatar avatar--accent">{{ t.review3_name[0] }}</span><span><strong>{{ t.review3_name }}</strong><small>{{ t.review3_role }}</small></span></figcaption>
-        </figure>
-      </div>
-      <p class="note reveal">{{ t.reviews_note }}</p>
-    </div>
-  </section>
-
-  <!-- FAQ: заголовок слева, вопросы справа, 1 : 1,618 -->
+  <!-- FAQ: простой список -->
   <section class="section section--tint" id="faq">
     <div class="container split split--golden split--start">
       <div class="reveal faq__head">
@@ -351,22 +164,9 @@
         <h2 class="section__title">{{ t.faq_title }}</h2>
       </div>
       <div class="faq">
-        <details class="faq__item card reveal" open>
-          <summary>{{ t.faq1_q }}</summary>
-          <p>{{ t.faq1_a }}</p>
-        </details>
-        <details class="faq__item card reveal">
-          <summary>{{ t.faq2_q }}</summary>
-          <p>{{ t.faq2_a }}</p>
-        </details>
-        <details class="faq__item card reveal">
-          <summary>{{ t.faq3_q }}</summary>
-          <p>{{ t.faq3_a }}</p>
-        </details>
-        <details class="faq__item card reveal">
-          <summary>{{ t.faq4_q }}</summary>
-          <p>{{ t.faq4_a }}</p>
-        </details>
+        <details class="faq__item reveal" open><summary>{{ t.faq1_q }}</summary><p>{{ t.faq1_a }}</p></details>
+        <details class="faq__item reveal"><summary>{{ t.faq2_q }}</summary><p>{{ t.faq2_a }}</p></details>
+        <details class="faq__item reveal"><summary>{{ t.faq3_q }}</summary><p>{{ t.faq3_a }}</p></details>
       </div>
     </div>
   </section>
@@ -374,18 +174,12 @@
   <!-- ФИНАЛ -->
   <section class="section section--final">
     <div class="container">
-      <div class="final reveal" data-spot>
+      <div class="final reveal">
         <h2 class="section__title">{{ t.final_title }}</h2>
-        <p class="section__lead">{{ t.final_text }}</p>
         <div class="hero__actions">
           <a class="btn btn--dark btn--arrow" href="{{ app_url }}"><span>{{ t.cta_primary }}</span><i class="arrow" aria-hidden="true"></i></a>
           <a class="btn btn--outline" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.cta_secondary }}</a>
         </div>
-        <ul class="final__tags">
-          <li>{{ t.final_small1 }}</li>
-          <li>{{ t.final_small2 }}</li>
-          <li>{{ t.final_small3 }}</li>
-        </ul>
       </div>
     </div>
   </section>

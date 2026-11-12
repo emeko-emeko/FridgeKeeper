@@ -1,4 +1,6 @@
 from fastapi.testclient import TestClient
+import html
+
 
 from app import app
 from core.i18n import TEXTS
@@ -10,14 +12,18 @@ def test_landing_defaults_to_russian():
     response = client.get("/")
     assert response.status_code == 200
     assert '<html lang="ru">' in response.text
-    assert TEXTS["ru"]["hero_title"] in response.text
+    page = html.unescape(response.text)  # Jinja экранирует апострофы и кавычки
+    for piece in _hero_pieces("ru"):
+        assert piece in page
 
 
 def test_query_switches_to_english_and_sets_cookie():
     response = client.get("/?lang=en")
     assert response.status_code == 200
     assert '<html lang="en">' in response.text
-    assert TEXTS["en"]["hero_title"] in response.text
+    page = html.unescape(response.text)
+    for piece in _hero_pieces("en"):
+        assert piece in page
     assert "lang=en" in response.headers.get("set-cookie", "")
 
 
@@ -92,3 +98,8 @@ def test_both_languages_have_the_same_keys():
     assert set(TEXTS["ru"]) == set(TEXTS["en"])
     for key, value in TEXTS["en"].items():
         assert value.strip(), f"empty English text for {key}"
+
+def _hero_pieces(lang: str) -> list[str]:
+    t = TEXTS[lang]
+    return [t["hero_title_pre"], t["hero_title_hl"], t["hero_title_post"]]
+

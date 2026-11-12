@@ -9,7 +9,7 @@ from aiogram.enums import ParseMode
 
 from bot.handlers import router
 from core.config import TELEGRAM_TOKEN
-from core.database import init_db
+from core.scheduler import start_scheduler
 
 
 async def main() -> None:
@@ -18,14 +18,18 @@ async def main() -> None:
 
     logging.basicConfig(level=logging.INFO)
 
-    # Создаёт недостающие таблицы (users и products уже есть в базе)
-    await init_db()
+    # Схему создаёт и меняет Alembic (alembic upgrade head), init_db здесь не нужен
 
     bot = Bot(TELEGRAM_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
     dp.include_router(router)
 
-    await dp.start_polling(bot)
+    # Планировщик уведомлений работает в том же процессе, что и бот
+    scheduler = start_scheduler(bot)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        scheduler.shutdown(wait=False)
 
 
 if __name__ == "__main__":
