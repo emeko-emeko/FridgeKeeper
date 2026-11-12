@@ -15,7 +15,7 @@
   --accent-hover: #a94430;
   --green: #5a9b6b;
   --orange: #e9913f;
-  --yellow: #f2d26b;
+  --yellow: #876610;
   --sage: #e2eed8;
   --butter: #fbeec0;
   --peach: #f7dcc7;
@@ -205,7 +205,7 @@ button { font: inherit; }
 .hl { color: inherit; font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 0.07em; text-underline-offset: 0.14em; }
 /* Ключевое слово: жёлтая полоса за текстом. Текст тёмный на жёлтом в обеих темах */
 .hl--dither { position: relative; display: inline-block; isolation: isolate; color: #2b221e; text-decoration: none; }
-.hl--dither::before { content: ""; position: absolute; z-index: -1; transform-origin: left center; transition: transform 700ms var(--ease) var(--mark-delay, 0ms); left: -0.12em; right: -0.12em; top: 0.1em; bottom: 0.02em; background: var(--yellow); }
+.hl--dither::before { content: ""; position: absolute; z-index: -1; transform-origin: left center; transition: transform 500ms var(--ease) var(--mark-delay, 0ms); left: -0.12em; right: -0.12em; top: 0.1em; bottom: 0.02em; background: #f5d878; }
 .js .hl--dither:not(.is-marked)::before { transform: scaleX(0); }
 .hero .hl--dither { --mark-delay: 900ms; }
 .section--terra .hl.hl--dither { color: #2b221e; }
@@ -215,7 +215,7 @@ button { font: inherit; }
 .hero { overflow-x: clip; }
 .hero > .container { position: relative; z-index: 1; }
 .hero__bands { position: absolute; left: 0; right: 0; top: calc(100svh - 200px); height: 144px; background: url("/static/img/dither-bands.svg") 0 0 / 16px 144px repeat-x; image-rendering: pixelated; pointer-events: none; z-index: 0; }
-@media (max-width: 599px) { .hero__bands { height: 72px; background-size: 8px 72px; } }
+@media (max-width: 899px) { .hero__bands { display: none; } }
 
 .hero__sub { margin: var(--s3) auto 0; font-size: 18px; color: var(--ink-2); max-width: 52ch; }
 .hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s2); margin-top: var(--s4); }
@@ -270,7 +270,7 @@ html.lenis, html.lenis body { height: auto; }
 /* Секции */
 .section { padding: var(--s6) 0; }
 .section--tint { background: var(--raised); }
-.section--dark { background: var(--night); color: #f2e9da; }
+.section--dark { background: var(--night); color: #f2e9da; --yellow: #f5d878; }
 .section--dark .section__title { color: #fffaf1; }
 .section--final { padding: var(--s5) 0 var(--s6); }
 
@@ -374,7 +374,6 @@ html.lenis, html.lenis body { height: auto; }
   .container { padding: 0 var(--s2); }
   .hero { padding: var(--s5) 0 var(--s5); }
   .section { padding: var(--s5) 0; }
-  .nav__actions .btn--small { display: none; }
   .final { padding: var(--s4) var(--s3); }
 }
 
@@ -438,10 +437,10 @@ html.lenis, html.lenis body { height: auto; }
 
 /* Фрагменты внутри карточек: цвета фиксированы, это «бумага» в любой теме */
 .chip { justify-self: start; padding: 4px 8px; background: #e2eed8; color: #2f5f3c; border-radius: 999px; font-size: 12px; font-weight: 500; }
-.field { padding: 8px 12px; background: #fffaf1; border: 1px solid rgba(43, 34, 30, 0.14); border-radius: 4px; display: grid; gap: 2px; }
+.field { padding: 8px 12px; background: #fffaf1; border: 1px solid rgba(43, 34, 30, 0.14); border-radius: var(--r-sm); display: grid; gap: 2px; }
 .field small { font-size: 12px; color: #6a5b4f; }
 .field b { font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
-.prow { display: grid; grid-template-columns: 4.5rem 1fr 3.5rem; align-items: center; gap: 8px; padding: 8px 12px; background: #fffaf1; border-radius: 4px; font-size: 14px; }
+.prow { display: grid; grid-template-columns: 4.5rem 1fr 3.5rem; align-items: center; gap: 8px; padding: 8px 12px; background: #fffaf1; border-radius: var(--r-sm); font-size: 14px; }
 .prow span { font-weight: 500; }
 .prow em { font-style: normal; text-align: right; color: #6a5b4f; font-variant-numeric: tabular-nums; }
 .prow .meter { width: 100%; height: 8px; background: rgba(43, 34, 30, 0.12); }
