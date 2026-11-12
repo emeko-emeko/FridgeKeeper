@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% macro p(hint, fresh, style='', alert=false) -%}
-<button class="prod" type="button" data-hint="{{ hint }}" data-fresh="{{ fresh }}" aria-label="{{ hint }}" aria-pressed="false" style="{{ style }}"><svg viewBox="0 0 60 60" aria-hidden="true">{{ caller() }}</svg>{% if alert %}<span class="prod__alert" aria-hidden="true">!</span>{% endif %}</button>
+<button class="prod" type="button" data-hint="{{ hint }}" data-fresh="{{ fresh }}" aria-label="{{ hint }}" aria-pressed="false" style="{{ style }}"><svg viewBox="0 0 60 60" aria-hidden="true">{{ caller() }}</svg>{% if alert %}<span class="prod__alert" aria-hidden="true"></span>{% endif %}</button>
 {%- endmacro %}
 
 {% block content %}
@@ -13,7 +13,7 @@
       <div class="hero__copy">
         <p class="eyebrow rise">{{ t.hero_eyebrow }}</p>
         <h1 class="hero__title rise rise--1">
-          {{ t.hero_title_pre }} <span class="hl">{{ t.hero_title_hl }}<svg class="hl__line" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 Q 50 2 100 7 T 198 6"/></svg></span> {{ t.hero_title_post }}
+          {{ t.hero_title_pre }} <span class="hl">{{ t.hero_title_hl }}</span> {{ t.hero_title_post }}
         </h1>
         <div class="hero__actions rise rise--3">
           <a class="btn btn--primary btn--arrow" href="{{ app_url }}"><span>{{ t.cta_primary }}</span><i class="arrow" aria-hidden="true"></i></a>
@@ -90,7 +90,7 @@
   <!-- ЦЕЛЬ: этикетка со шкалой свежести -->
   <section class="section">
     <div class="container split split--golden">
-      <div class="label tilt reveal">
+      <div class="label reveal">
         <div class="label__head"><span class="label__brand">{{ t.label_brand }}</span><span>{{ t.label_volume }}</span></div>
         <p class="label__name">{{ t.label_name }}</p>
         <dl class="label__facts">
@@ -119,7 +119,7 @@
           <li class="feature" data-feature="3" tabindex="0" role="tab" aria-selected="false"><span class="feature__title">{{ t.feature3_title }}</span></li>
         </ul>
       </div>
-      <div class="preview tilt reveal" aria-live="polite">
+      <div class="preview reveal" aria-live="polite">
         <div class="preview__panel is-on" data-fp="1">
           <div class="row"><span>{{ t.fp1_a }}</span><strong>{{ t.fp1_a_val }}</strong></div>
           <div class="row"><span>{{ t.fp1_b }}</span><strong>{{ t.fp1_b_val }}</strong></div>

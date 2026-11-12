@@ -109,27 +109,4 @@
     });
   });
 
-  // 6. Наклон блоков и свет под курсором
-  if (fine && !reduce) {
-    $$(".tilt").forEach(function (el) {
-      el.addEventListener("pointermove", function (e) {
-        var r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-        el.classList.add("is-tilting");
-        el.style.setProperty("--gx", x * 100 + "%");
-        el.style.setProperty("--gy", y * 100 + "%");
-        el.style.transform = "perspective(900px) rotateX(" + ((0.5 - y) * 5) + "deg) rotateY(" + ((x - 0.5) * 6) + "deg) translateY(-3px)";
-      });
-      el.addEventListener("pointerleave", function () {
-        el.classList.remove("is-tilting");
-        el.style.transform = "";
-      });
-    });
-    $$(".btn").forEach(function (b) {
-      b.addEventListener("pointermove", function (e) {
-        var r = b.getBoundingClientRect();
-        b.style.setProperty("--mx", e.clientX - r.left + "px");
-        b.style.setProperty("--my", e.clientY - r.top + "px");
-      });
-    });
-  }
 })();
