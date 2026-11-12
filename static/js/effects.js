@@ -17,9 +17,9 @@
   addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
-  // 2. Появление при прокрутке (чат проигрывается заново по клику)
-  var chat = $("[data-chat]");
-  if ("IntersectionObserver" in window && !reduce) {
+  // 2. Появление при прокрутке. Если загружен GSAP, этим занимается раздел 3
+  var useGsap = !!(window.gsap && window.ScrollTrigger);
+  if ("IntersectionObserver" in window && !reduce && !useGsap) {
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
         if (e.isIntersecting) { e.target.classList.add("is-visible"); io.unobserve(e.target); }
@@ -29,52 +29,82 @@
   } else {
     $$(".reveal").forEach(function (el) { el.classList.add("is-visible"); });
   }
-  if (chat) {
-    chat.addEventListener("click", function () {
-      chat.classList.remove("is-visible");
-      void chat.offsetWidth;
-      chat.classList.add("is-visible");
-    });
-  }
 
-  // 3. Холодильник: один обработчик на дверцы, один на внутренность
-  var fridge = $("[data-fridge]");
-  if (fridge) {
-    var doors = $$(".door", fridge), prods = $$(".prod", fridge);
-    var line = $("[data-info-line]"), meter = $("[data-meter]");
-    var def = line ? line.textContent : "";
+  // 3. Движение первого экрана: GSAP и Lenis (только лендинг, только без reduced-motion)
+  var hero = $(".hero");
+  if (hero && !reduce && window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
 
-    function setMeter(v) {
-      if (!meter) return;
-      meter.parentNode.style.opacity = v === null ? "0" : "1";
-      if (v === null) return;
-      meter.style.setProperty("--w", v + "%");
-      meter.style.setProperty("--c", v <= 25 ? "var(--accent)" : v <= 55 ? "var(--orange)" : "var(--green)");
+    if (window.Lenis) {
+      var lenis = new Lenis({ duration: 1.1 });
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+      gsap.ticker.lagSmoothing(0);
+      // Ссылки-якоря шапки едут плавно вместе с Lenis
+      $$('a[href^="#"]').forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          var id = a.getAttribute("href"), target = id.length > 1 ? $(id) : null;
+          if (!target) return;
+          e.preventDefault();
+          lenis.scrollTo(target, { offset: -72 });
+        });
+      });
     }
-    function reset() {
-      prods.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
-      if (line) line.textContent = def;
-      setMeter(null);
-    }
-    function setOpen(open) {
-      fridge.classList.toggle("is-open", open);
-      doors.forEach(function (d) { d.setAttribute("aria-expanded", String(open)); });
-      if (!open) reset();
-    }
-    reset();
 
-    doors.forEach(function (d) {
-      d.addEventListener("click", function () { setOpen(!fridge.classList.contains("is-open")); });
+    // Вход: текст по очереди, фото раскрывается сверху вниз, наклейка прилипает
+    var tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    tl.from(".hero .eyebrow", { y: 16, opacity: 0, duration: 0.6 })
+      .from(".hero__title", { y: 28, opacity: 0, duration: 0.8 }, "-=0.35")
+      .from(".hero__sub", { y: 20, opacity: 0, duration: 0.6 }, "-=0.5")
+      .from(".hero .hero__actions > *", { y: 16, opacity: 0, duration: 0.6, stagger: 0.1 }, "-=0.45")
+      .from(".window", { y: 56, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.3")
+      .from(".hero__phone", { y: 72, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.75")
+      .from(".hero__tag", { y: 28, opacity: 0, rotate: -7, duration: 0.7, ease: "back.out(1.5)" }, "-=0.5")
+      .from(".hero__tag .meter b", { scaleX: 0, duration: 1.2, ease: "power2.out" }, "-=0.3");
+
+    // Секции: каждый блок поднимается и проявляется, когда доходит до нижней трети экрана
+    $$(".reveal").forEach(function (el) {
+      el.classList.add("is-visible");
+      el.style.transition = "none";
+      gsap.from(el, {
+        y: 36, opacity: 0, duration: 0.9, ease: "power3.out",
+        scrollTrigger: { trigger: el, start: "top 88%", once: true }
+      });
     });
-    $(".fridge__inside", fridge).addEventListener("click", function (e) {
-      var p = e.target.closest(".prod");
-      if (!p) { setOpen(false); return; }
-      prods.forEach(function (b) { b.setAttribute("aria-pressed", String(b === p)); });
-      if (line) line.textContent = p.getAttribute("data-hint") || "";
-      setMeter(parseInt(p.getAttribute("data-fresh"), 10) || 0);
+
+    // Три проблемы: по очереди слева направо
+    var issues = $$(".issues li");
+    if (issues.length) {
+      gsap.set(issues, { y: 40, opacity: 0 });
+      ScrollTrigger.batch(issues, {
+        start: "top 90%", once: true,
+        onEnter: function (items) {
+          gsap.to(items, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", stagger: 0.14 });
+        }
+      });
+    }
+
+    // Блок со скриншотами чуть плывёт вверх, пока его проходишь
+    var stage = $(".preview");
+    if (stage) {
+      gsap.fromTo(stage, { yPercent: 4 }, {
+        yPercent: -4, ease: "none",
+        scrollTrigger: { trigger: stage, start: "top bottom", end: "bottom top", scrub: true }
+      });
+    }
+
+    // Фото в секциях: параллакс внутри рамки (запас 8% задан в CSS)
+    $$(".photo__img, .band__img").forEach(function (img) {
+      gsap.fromTo(img, { yPercent: 5 }, {
+        yPercent: -5, ease: "none",
+        scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true }
+      });
     });
-    addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && fridge.classList.contains("is-open")) setOpen(false);
+
+    // Телефон в первом экране чуть обгоняет окно при прокрутке: объём
+    gsap.fromTo(".hero__phone", { yPercent: 4 }, {
+      yPercent: -12, ease: "none",
+      scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true }
     });
   }
 
@@ -103,7 +133,6 @@
   feats.forEach(function (li) {
     var n = li.getAttribute("data-feature");
     li.addEventListener("click", function () { showFeature(n); });
-    li.addEventListener("mouseenter", function () { if (fine) showFeature(n); });
     li.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showFeature(n); }
     });

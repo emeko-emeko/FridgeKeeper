@@ -11,7 +11,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from api.auth import SESSION_COOKIE, SESSIONS
+from api.auth import SESSION_COOKIE, read_session_token
 from api.auth import router as auth_router
 from api.products import router as products_router
 from core.i18n import (
@@ -106,7 +106,7 @@ async def login_page(request: Request) -> HTMLResponse:
 @app.get("/app", response_class=HTMLResponse)
 async def web_app(request: Request):
     """Веб-интерфейс списка продуктов. Без сессии отправляем на вход."""
-    if request.cookies.get(SESSION_COOKIE) not in SESSIONS:
+    if read_session_token(request.cookies.get(SESSION_COOKIE)) is None:
         return RedirectResponse(url="/login", status_code=303)
     lang, save_lang = resolve_lang(request)
     return render(request, "app.html", lang, save_lang)

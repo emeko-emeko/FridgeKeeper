@@ -4,7 +4,7 @@ import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 
-from api.auth import SESSION_COOKIE, SESSIONS
+from api.auth import SESSION_COOKIE, make_session_token
 from api.products import get_session
 from app import app
 from core.database import init_db, make_session_factory
@@ -31,11 +31,9 @@ async def factory(tmp_path):
 
 @pytest.fixture
 def client(factory):
-    SESSIONS["test-token"] = 1
     client = TestClient(app)
-    client.cookies.set(SESSION_COOKIE, "test-token")
+    client.cookies.set(SESSION_COOKIE, make_session_token(1))
     yield client
-    SESSIONS.pop("test-token", None)
 
 
 def test_list_requires_login():
@@ -99,11 +97,7 @@ def test_delete_removes_product(client):
 def test_other_users_product_is_not_found(client):
     pid = client.post("/products", json={"name": "Чужой"}).json()["id"]
 
-    SESSIONS["other-token"] = 2
-    client.cookies.set(SESSION_COOKIE, "other-token")
-    try:
-        assert client.patch(f"/products/{pid}", json={"name": "X"}).status_code == 404
-        assert client.delete(f"/products/{pid}").status_code == 404
-    finally:
-        SESSIONS.pop("other-token", None)
-        client.cookies.set(SESSION_COOKIE, "test-token")
+    client.cookies.set(SESSION_COOKIE, make_session_token(2))
+    assert client.patch(f"/products/{pid}", json={"name": "X"}).status_code == 404
+    assert client.delete(f"/products/{pid}").status_code == 404
+    client.cookies.set(SESSION_COOKIE, make_session_token(1))

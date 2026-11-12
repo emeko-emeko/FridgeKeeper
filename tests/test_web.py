@@ -87,30 +87,30 @@ def test_app_without_login_redirects_to_login():
 
 
 def test_app_page_renders_in_both_languages_after_login():
-    from api.auth import SESSION_COOKIE, SESSIONS
+    from api.auth import SESSION_COOKIE, make_session_token
 
-    SESSIONS["web-test-token"] = 1
+    TOKEN_WEB_TEST_TOKEN = make_session_token(1)
     try:
         logged = TestClient(app)
-        logged.cookies.set(SESSION_COOKIE, "web-test-token")
+        logged.cookies.set(SESSION_COOKIE, TOKEN_WEB_TEST_TOKEN)
         ru = logged.get("/app?lang=ru")
         en = logged.get("/app?lang=en")
     finally:
-        SESSIONS.pop("web-test-token", None)
+        None
     assert ru.status_code == 200 and en.status_code == 200
     assert TEXTS["ru"]["app_title"] in ru.text
     assert TEXTS["en"]["app_title"] in en.text
     assert "/static/js/app.js" in ru.text
 
 
-def test_logout_removes_session():
-    from api.auth import SESSION_COOKIE, SESSIONS
+def test_logout_clears_cookie():
+    from api.auth import SESSION_COOKIE, make_session_token
 
-    SESSIONS["logout-token"] = 1
     logged = TestClient(app)
-    logged.cookies.set(SESSION_COOKIE, "logout-token")
-    assert logged.post("/auth/logout").status_code == 200
-    assert "logout-token" not in SESSIONS
+    logged.cookies.set(SESSION_COOKIE, make_session_token(1))
+    response = logged.post("/auth/logout")
+    assert response.status_code == 200
+    assert f"{SESSION_COOKIE}=" in response.headers.get("set-cookie", "")
 
 
 def test_static_stylesheet_is_served():
