@@ -178,9 +178,42 @@ FridgeKeeper\
   - Результат: `uv run pytest -q` → `58 passed, 1 warning in 5.24s`. `uv run python scripts/check_ocr.py test.png` → «Йогурт», дата 2026-11-10 (предположение), «срок уже истёк».
   - Пункт 524 исключён из списка по решению пользователя.
   - Смена пароля `fridgekeeper` в PostgreSQL: инструкция дана, выполняет пользователь. Не подтверждено. В чат пользователь прислал строку, похожую на пароль; она не использовалась и не записана. Рекомендуется сменить её после работы.
+- **12.11.2026, коммит и публикация на GitHub**:
+  - Коммит `1bbc413` «Backend: products API, Mini App camera, /add command, scheduler», отправлен в `origin/main` (`https://github.com/emeko-emeko/FridgeKeeper`).
+  - В коммит вошли исходники, тесты, миграции, `pyproject.toml`, `uv.lock`, `alembic.ini`, `CLAUDE.md`, `AGENTS.md`.
+  - Исключены: `.env`, `instance/`, `cloudflared/`, `graphify-out/`, `result.json`, `test.png`. В `.gitignore` добавлены `cloudflared/`, `graphify-out/`, `result.json`, `test.png`, `*.dump`.
+  - Перед коммитом пароль `fk_pass_2026` удалён из журнала в `CLAUDE.md` и `AGENTS.md` (заменён на «значение не записано»). Пароль остаётся в истории чата и, возможно, в истории git, если там был `.env`. Проверку истории git не делали.
+  - Проверка: поиском по staged-файлам не найдено `fk_pass`, токенов Telegram и ключей Yandex (`grep exit 1`).
+  - Рабочая копия после коммита чистая (`git status --short` пусто).
+- **12.11.2026, итог по бэкенду**:
+  - Не сделано или не проверено: смена пароля PostgreSQL (делает пользователь); сценарий Mini App в Telegram («Да», «Нет, введу сам», `GET /products`); ручной ввод срока на `/app`; живой прогон планировщика уведомлений в боте; проверка `python-multipart` (тесты с загрузкой проходят, но в `pyproject.toml` не сверяли).
+  - Отложено: именованный туннель, перенос сессий из памяти в БД, судьба сайта на Vercel.
+  - Следующий шаг по плану: редизайн `/mini` (после коммита), затем ручной ввод срока на `/app`, затем повторная проверка Mini App. Ждём подтверждения плана.
+- **12.11.2026, проверка входа через Telegram в браузере**:
+  - `GET /login` → 200, `GET /app` → 200, `GET /auth/login-widget` без параметров → 400 (сервер на 127.0.0.1:8000 запущен).
+  - В браузере на `http://127.0.0.1:8000/login` виджет (iframe `oauth.telegram.org`) показывает «Bot domain invalid». Кнопки для входа нет.
+  - Причина (по тексту ошибки, в документации Telegram не сверяли): виджет работает только на домене, привязанном к боту через BotFather `/setdomain`. `127.0.0.1` привязать нельзя.
+  - Не проверено: вход через адрес туннеля (`*.trycloudflare.com`). Нужно, чтобы текущий адрес туннеля был привязан в `/setdomain`, и тогда проверить кнопку в браузере.
+- **12.11.2026, сайт на Vercel отдаёт 500**:
+  - `GET https://fridge-keeper-eight.vercel.app/` → 500, заголовок `X-Vercel-Error: FUNCTION_INVOCATION_FAILED`. Функция падает при запуске.
+  - Vercel MCP не дал логи: `list_projects` → 403, команда в scope `imansuper44-2979`, `list_teams` пустой. Логи не смотрели.
+  - Вероятная причина: `api/products.py` использует `File`/`UploadFile`, а `python-multipart` есть только в локальном `.venv`, но не в `requirements.txt`. Проверка: `import app` с заблокированным `multipart` выводит «pip install python-multipart».
+  - Второй кандидат: `core/ocr.py` делает `import httpx`, а `httpx` нет в `requirements.txt`.
+  - Исправление не применено: нужен план и подтверждение. План: добавить `python-multipart` и `httpx` в `requirements.txt`, передеплоить.
+  - Исправлено по подтверждению: в `requirements.txt` добавлены `python-multipart==0.0.33`, `httpx==0.28.1`, `tzdata==2026.6`. Коммит `9b46b2e` локальный, не запушен.
+  - Проверка в чистом venv из `requirements.txt` (SQLite): `import app` OK, `/` 200, `/login` 200, `/app` 200, `/mini` 200, `/products` без входа 401.
+  - Не найдено при проверке: `asyncpg` нет в `requirements.txt`, а локальный `.env` указывает на PostgreSQL. Для Vercel это важно только если там задан `DATABASE_URL` с postgres.
+  - Vercel после этого не проверен: `https://fridge-keeper-eight.vercel.app/` всё ещё 500. Нужен push в `origin/main`, чтобы Vercel пересобрал сайт. Push не делали: нужно подтверждение.
+  - Push по подтверждению: `git push origin main` → `1bbc413..9b46b2e main -> main`. Через ~3 минуты `https://fridge-keeper-eight.vercel.app/`, `/login`, `/app` всё ещё 500 (`FUNCTION_INVOCATION_FAILED`). Статус деплоя не видно: Vercel MCP получает 403 по scope `imansuper44-2979`, `gh` не авторизован. Нужно открыть дашборд Vercel: проверить, запустился ли деплой `9b46b2e`, и build/runtime logs.
+  - Доступ к Vercel дали (scope `imansuper44-2979`). Деплой `dpl_7PZSCZRorq8AUYbSoRc7gHHuQmPh` (коммит `9b46b2e`) READY, но функция падает: `ModuleNotFoundError: No module named 'fastapi'`. Vercel ставит зависимости из `pyproject.toml`, а `fastapi`, `jinja2`, `uvicorn` там не было.
+  - Исправлено по подтверждению: `uv add fastapi==0.162.2 jinja2==3.1.6 uvicorn==0.54.0` (в `pyproject.toml` и `uv.lock`, `annotated-doc` 0.0.5 → 0.0.6 как транзитивная зависимость).
+  - Убрано из git-индекса (файлы на диске остались): `unslop` (gitlink) и `.playwright-mcp/` (10 файлов). Оба уже были в `.gitignore`.
+  - Проверка: `uv export` → чистое venv → `pip check` «No broken requirements found»; маршруты `/`, `/login`, `/app`, `/mini` 200; `/products` без входа 401. `.venv` pytest → `58 passed, 1 warning`.
+  - Правило изменено: при изменении зависимостей обновлять и `requirements.txt`, и `pyproject.toml` (Vercel берёт `pyproject.toml`).
+  - Повторная проверка (12.11.2026): чистое venv: `pip check` → «No broken requirements found»; `import multipart, httpx, tzdata, fastapi` OK; маршруты `/` 200, `/login` 200, `/app` 200, `/mini` 200, `/products` без входа 401, `/auth/login-widget` без параметров 400. `uv`/`.venv` pytest → `58 passed, 1 warning`.
 
 ## Нерешённые вопросы и риски
 - Законность обработки данных за пределами Казахстана: решение принято, но юридически не проверено специалистом.
 - Словарь продуктов небольшой: продукты вне словаря вводятся вручную.
-- Распознавание казахских этикеток: в `ocr.py` указаны только `ru` и `en`, возможно стоит добавить `kk`.
+- ~~Распознавание казахских этикеток: в `ocr.py` указаны только `ru` и `en`~~ — добавлен `kk` (12.11.2026, тесты 58 passed).
 - Ссылка «Подключить Telegram» на главной ведёт в бота, а не на `/login`. Это принято, решение о смене отложено.
