@@ -108,6 +108,15 @@
     });
   }
 
+  // Жёлтая полоса за ключевым словом: один раз при появлении, дальше статична
+  $$(".hl--dither").forEach(function (el) {
+    if (reduce || !(window.gsap && window.ScrollTrigger)) { el.classList.add("is-marked"); return; }
+    ScrollTrigger.create({
+      trigger: el, start: "top 90%", once: true,
+      onEnter: function () { el.classList.add("is-marked"); }
+    });
+  });
+
   // 4. Тема
   var toggle = $(".theme-toggle");
   if (toggle) {

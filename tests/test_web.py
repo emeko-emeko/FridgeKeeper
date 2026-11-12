@@ -133,13 +133,18 @@ def _login_button_href(page_html: str) -> str:
     return html.unescape(match.group(1))
 
 
-def test_login_on_vercel_host_points_to_telegram_bot(monkeypatch):
+def test_login_on_vercel_host_uses_login_widget(monkeypatch):
     import app as app_module
+    from urllib.parse import parse_qs, urlsplit
 
     monkeypatch.setattr(app_module, "PUBLIC_BASE_URL", "")
     response = TestClient(app).get("/login", headers={"host": "fridge-keeper-eight.vercel.app"})
     assert response.status_code == 200
-    assert _login_button_href(response.text) == "https://t.me/FridgeKeeper_MESSAGE_BOT"
+    href = _login_button_href(response.text)
+    assert href.startswith("https://oauth.telegram.org/auth?")
+    query = parse_qs(urlsplit(href).query)
+    assert query["origin"][0].endswith("fridge-keeper-eight.vercel.app")
+    assert query["return_to"][0].endswith("fridge-keeper-eight.vercel.app/auth/login-widget")
 
 
 def test_login_with_public_base_url_returns_to_it(monkeypatch):
