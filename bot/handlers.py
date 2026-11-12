@@ -11,7 +11,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from bot.formatting import HELP_TEXT, LINK_MESSAGES, PHOTO_TEXTS, WELCOME_TEXT, format_products
+from bot.formatting import (
+    HELP_TEXT,
+    LINK_MESSAGES,
+    PHOTO_TEXTS,
+    WELCOME_TEXT,
+    days_left_text,
+    format_products,
+)
 from core.database import SessionFactory
 from core.label_service import analyze_label
 from core.linking import LinkStatus, consume_link_token
@@ -98,7 +105,8 @@ async def cmd_add(message: Message, command: CommandObject) -> None:
         await session.commit()
 
     date_text = expiry.strftime("%d.%m.%Y") if expiry else "не указан"
-    await message.answer(f"Добавлено: {html.escape(name)}, срок: {date_text}")
+    left = days_left_text(expiry, datetime.now(TZ).date())
+    await message.answer(f"Добавлено: {html.escape(name)}, срок: {date_text}. {left}")
 
 
 async def _save_product(telegram_id: int, name: str, expiry: date | None, source: str) -> None:
@@ -210,7 +218,8 @@ async def on_photo_confirm(callback: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await callback.answer()
     await callback.message.edit_reply_markup(reply_markup=None)
-    await callback.message.answer(PHOTO_TEXTS["saved"].format(name=html.escape(data["name"])))
+    left = days_left_text(expiry, datetime.now(TZ).date())
+    await callback.message.answer(PHOTO_TEXTS["saved"].format(name=html.escape(data["name"]), left=left))
 
 
 @router.callback_query(StateFilter(AddFromPhoto.confirm), F.data == "photo:no")
@@ -230,8 +239,9 @@ async def on_manual_text(message: Message, state: FSMContext) -> None:
     name, expiry = parsed
     await _save_product(message.from_user.id, name, expiry, "manual")
     await state.clear()
+    left = days_left_text(expiry, datetime.now(TZ).date())
     await message.answer(
-        f"Добавлено: {html.escape(name)}, срок: {_fmt(expiry) if expiry else 'не указан'}"
+        f"Добавлено: {html.escape(name)}, срок: {_fmt(expiry) if expiry else 'не указан'}. {left}"
     )
 
 
@@ -245,4 +255,5 @@ async def on_name_text(message: Message, state: FSMContext) -> None:
     expiry = date.fromisoformat(data["expiry"]) if data.get("expiry") else None
     await _save_product(message.from_user.id, name, expiry, "ocr" if expiry else "manual")
     await state.clear()
-    await message.answer(PHOTO_TEXTS["saved"].format(name=html.escape(name)))
+    left = days_left_text(expiry, datetime.now(TZ).date())
+    await message.answer(PHOTO_TEXTS["saved"].format(name=html.escape(name), left=left))

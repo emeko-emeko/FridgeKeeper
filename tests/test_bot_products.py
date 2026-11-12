@@ -48,3 +48,19 @@ def test_bot_menu_commands_are_all_in_help():
     for command, description in BOT_COMMANDS:
         assert f"/{command}" in HELP_TEXT
         assert 0 < len(description) <= 256
+
+
+def test_days_left_text_wording():
+    from datetime import date
+
+    from bot.formatting import days_left_text
+
+    today = date(2026, 11, 13)
+    assert days_left_text(None, today) == "срок не указан"
+    assert days_left_text(date(2026, 11, 13), today) == "истекает сегодня"
+    assert days_left_text(date(2026, 11, 14), today) == "осталось 1 день"
+    assert days_left_text(date(2026, 11, 17), today) == "осталось 4 дня"
+    assert days_left_text(date(2026, 11, 20), today) == "осталось 7 дней"
+    assert days_left_text(date(2026, 11, 12), today) == "срок истёк 1 день назад"
+    assert days_left_text(date(2026, 11, 9), today) == "срок истёк 4 дня назад"
+    assert days_left_text(date(2026, 11, 1), today) == "срок истёк 12 дней назад"
