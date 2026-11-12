@@ -147,12 +147,12 @@ button { font: inherit; }
 .theme-toggle .icon { position: absolute; width: 18px; height: 18px; transition: transform 180ms var(--ease), opacity 180ms var(--ease); }
 .theme-toggle .icon-moon { opacity: 0; transform: rotate(-90deg) scale(0.4); }
 :root[data-theme="dark"] .theme-toggle .icon-sun { opacity: 0; transform: rotate(90deg) scale(0.4); }
-:root[data-theme="dark"] .theme-toggle .icon-moon { opacity: 1; transform: none; color: var(--yellow); }
+:root[data-theme="dark"] .theme-toggle .icon-moon { opacity: 1; transform: none; color: var(--ink); }
 
 /* Кнопки */
 .btn {
   position: relative;
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   height: 48px; padding: 0 24px;
   border: 1px solid transparent;
   border-radius: 12px;
@@ -274,13 +274,13 @@ html.lenis, html.lenis body { height: auto; }
 .feature:hover .feature__chev { color: var(--accent); transform: translateX(3px); }
 .feature.is-active .feature__chev { color: var(--accent); transform: rotate(90deg); }
 .feature.is-active:hover .feature__chev { transform: rotate(90deg); }
-.feature p { margin-top: 6px; font-size: 15px; color: var(--ink-2); max-width: 46ch; }
+.feature p { margin-top: 8px; font-size: 15px; color: var(--ink-2); max-width: 46ch; }
 .feature:not(.is-active) p { display: none; }
-.preview { display: grid; place-items: center; min-height: 440px; padding: var(--s3); background: var(--bg); border: 1px solid var(--line); border-radius: 28px; box-shadow: var(--shadow-lift); overflow: hidden; }
+.preview { display: grid; place-items: center; min-height: 440px; padding: var(--s3); background: var(--bg); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow-lift); overflow: hidden; }
 .preview__panel { display: none; width: 100%; animation: fadeUp 500ms var(--ease); }
 .preview__panel.is-on { display: grid; justify-items: center; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.shot { display: block; width: 100%; height: auto; border-radius: 14px; box-shadow: 0 0 0 1px var(--line-strong), 0 20px 40px -20px rgba(43, 34, 30, 0.4); }
+.shot { display: block; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 0 0 1px var(--line-strong), 0 20px 40px -20px rgba(43, 34, 30, 0.4); }
 .shot--phone { max-width: 250px; border-radius: 24px; }
 @media (max-width: 599px) {
   .shot { max-width: 250px; border-radius: 24px; }
@@ -288,9 +288,9 @@ html.lenis, html.lenis body { height: auto; }
 
 /* Чат Telegram: настоящие тексты бота */
 .chat { display: grid; gap: 12px; width: 100%; max-width: 400px; padding: var(--s3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-soft); }
-.chat__head { display: flex; align-items: center; gap: 10px; font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.chat__head { display: flex; align-items: center; gap: 8px; font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .chat__avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--green); }
-.bubble { max-width: 86%; padding: 10px 16px; background: var(--raised); border-radius: 18px 18px 18px 6px; font-size: 15px; }
+.bubble { max-width: 86%; padding: 12px 16px; background: var(--raised); border-radius: 18px 18px 18px 6px; font-size: 15px; }
 .bubble--me { justify-self: end; background: var(--sage); border-radius: 18px 18px 6px 18px; }
 
 /* FAQ */
@@ -301,7 +301,7 @@ html.lenis, html.lenis body { height: auto; }
   padding: var(--s2) var(--s3);
   font-weight: 600;
   display: flex; justify-content: space-between; align-items: center; gap: var(--s2);
-  transition: color 250ms ease;
+  transition: color 160ms var(--ease);
 }
 .faq__item summary::-webkit-details-marker { display: none; }
 .faq__item summary:hover { color: var(--accent); }
@@ -311,7 +311,7 @@ html.lenis, html.lenis body { height: auto; }
   background:
     linear-gradient(currentColor, currentColor) center / 12px 2px no-repeat,
     linear-gradient(currentColor, currentColor) center / 2px 12px no-repeat;
-  transition: transform 400ms var(--spring);
+  transition: transform 180ms var(--ease);
 }
 .faq__item[open] summary::after { transform: rotate(45deg); }
 .faq__item p { padding: 0 var(--s3) var(--s3); color: var(--ink-2); max-width: 60ch; animation: fadeUp 450ms var(--ease); }
@@ -364,9 +364,8 @@ html.lenis, html.lenis body { height: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .js .reveal { opacity: 1; transform: none; }
 }
-.meter { display: block; width: 160px; height: 6px; border-radius: 99px; background: var(--line-strong); overflow: hidden; transition: opacity 300ms ease; }
-.meter b { display: block; height: 100%; width: var(--w, 100%); border-radius: inherit; background: var(--c, var(--green)); transition: width 600ms var(--ease), background-color 300ms ease; }
-.meter--wide { width: 100%; margin-top: var(--s3); }
+.meter { display: block; width: 160px; height: 8px; border-radius: 99px; background: var(--line-strong); overflow: hidden; transition: opacity 300ms ease; }
+.meter b { display: block; height: 100%; width: var(--w, 100%); border-radius: inherit; background: var(--c, var(--green)); transition: background-color 160ms var(--ease); }
 
 /* Проблемы: три пункта с большими номерами */
 .issues { list-style: none; margin: var(--s5) 0 0; padding: 0; display: grid; gap: var(--s4); counter-reset: issue; }
@@ -377,14 +376,9 @@ html.lenis, html.lenis body { height: auto; }
 
 /* Фото: рамка обрезает, снимок чуть выше рамки для параллакса */
 .photo { margin: 0; }
-.photo__frame, .band__frame { position: relative; overflow: hidden; border-radius: 28px; background: var(--raised); }
+.photo__frame { position: relative; overflow: hidden; border-radius: 20px; background: var(--raised); }
 .photo__frame { aspect-ratio: 4 / 5; max-width: 460px; margin-inline: auto; box-shadow: 0 26px 50px -20px rgba(0, 0, 0, 0.6); }
-.photo__img, .band__img { position: absolute; left: 0; top: -8%; width: 100%; height: 116%; object-fit: cover; display: block; }
-.band { padding: 0 0 var(--s6); }
-.band__frame { margin: 0; aspect-ratio: 4 / 3; box-shadow: var(--shadow-lift); }
-@media (min-width: 900px) {
-  .band__frame { aspect-ratio: 21 / 9; }
-}
+.photo__img { position: absolute; left: 0; top: -8%; width: 100%; height: 116%; object-fit: cover; display: block; }
 
 
 /* FAQ: простой список */
@@ -424,26 +418,19 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* Фрагменты внутри карточек: цвета фиксированы, это «бумага» в любой теме */
-.chip { justify-self: start; padding: 3px 10px; background: #e2eed8; color: #2f5f3c; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.chip { justify-self: start; padding: 4px 8px; background: #e2eed8; color: #2f5f3c; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .field { padding: 8px 12px; background: #fffaf1; border: 1px solid rgba(43, 34, 30, 0.14); border-radius: 10px; display: grid; gap: 2px; }
 .field small { font-size: 12px; color: #6a5b4f; }
 .field b { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.prow { display: grid; grid-template-columns: 4.5rem 1fr 3.5rem; align-items: center; gap: 10px; padding: 8px 12px; background: #fffaf1; border-radius: 10px; font-size: 14px; }
+.prow { display: grid; grid-template-columns: 4.5rem 1fr 3.5rem; align-items: center; gap: 8px; padding: 8px 12px; background: #fffaf1; border-radius: 10px; font-size: 14px; }
 .prow span { font-weight: 600; }
 .prow em { font-style: normal; text-align: right; color: #6a5b4f; font-variant-numeric: tabular-nums; }
-.prow .meter { width: 100%; height: 6px; background: rgba(43, 34, 30, 0.12); }
+.prow .meter { width: 100%; height: 8px; background: rgba(43, 34, 30, 0.12); }
 .tg { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
 .tg__avatar { width: 24px; height: 24px; border-radius: 50%; background: #5a9b6b; }
 .tg__msg { padding: 10px 14px; background: #fffaf1; border-radius: 16px 16px 16px 4px; font-size: 14px; color: #2b221e; box-shadow: 0 1px 2px rgba(43, 34, 30, 0.12); }
 
-/* Вход через Telegram: своя кнопка вместо iframe-виджета */
+/* Вход через Telegram: своя кнопка вместо iframe-виджета, стили общие с .btn */
 .login { padding: 56px 0; text-align: center; }
 .login h1 { margin-bottom: 12px; }
-.tg-login {
-  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
-  margin-top: 24px; min-height: 52px; padding: 0 28px; border-radius: 12px;
-  background: var(--accent); color: #fffaf1; text-decoration: none;
-  font: 600 16px/1 var(--font-ui);
-}
-.tg-login:hover { background: var(--accent-hover); }
-.tg-login:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.tg-login { min-height: 52px; margin-top: 24px; padding: 0 28px; gap: 12px; }

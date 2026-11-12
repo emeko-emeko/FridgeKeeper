@@ -265,7 +265,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "shelf_kefir_hint": "Кефир · 8 дн",
         "shelf_jam_hint": "Варенье · 200 дн",
         "shelf_pickles_hint": "Маринованные огурцы · 60 дн",
-        "login_title": "Вход с помощью Telegram",
+        "login_title": "Вход",
         "login_hint": "Нажмите кнопку ниже, чтобы войти",
         "login_button": "Войти через Telegram"
     },
@@ -520,7 +520,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "shelf_kefir_hint": "Kefir · 8 d",
         "shelf_jam_hint": "Jam · 200 d",
         "shelf_pickles_hint": "Pickles · 60 d",
-        "login_title": "Enter with Telegram",
+        "login_title": "Sign in",
         "login_hint": "Press the button below to sign in",
         "login_button": "Sign in with Telegram"
     },
