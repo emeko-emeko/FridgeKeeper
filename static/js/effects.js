@@ -60,7 +60,7 @@
       .from(".window", { y: 56, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.3")
       .from(".hero__phone", { y: 72, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.75")
       .from(".hero__tag", { y: 28, opacity: 0, rotate: -7, duration: 0.7, ease: "power3.out" }, "-=0.5")
-      .from(".hero__tag .meter b", { scaleX: 0, duration: 1.2, ease: "power2.out" }, "-=0.3");
+      .from(".hero__tag .meter b", { scaleX: 0, duration: 1.2, ease: "power3.out" }, "-=0.3");
 
     // Секции: каждый блок поднимается и проявляется, когда доходит до нижней трети экрана
     $$(".reveal").forEach(function (el) {
@@ -94,7 +94,7 @@
     }
 
     // Фото в секциях: параллакс внутри рамки (запас 8% задан в CSS)
-    $$(".photo__img, .band__img").forEach(function (img) {
+    $$(".photo__img").forEach(function (img) {
       gsap.fromTo(img, { yPercent: 5 }, {
         yPercent: -5, ease: "none",
         scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true }

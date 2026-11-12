@@ -52,3 +52,7 @@ LINK_TOKEN_TTL_MINUTES: int = int(os.getenv("LINK_TOKEN_TTL_MINUTES", "10"))
 # Ключ подписи сессий. На Vercel обязателен одинаковый для всех инстансов.
 # Если не задан, на каждом запуске генерируется случайный (сессии слетают при перезапуске).
 SESSION_SECRET: str = os.getenv("SESSION_SECRET", "") or __import__("secrets").token_hex(32)
+
+# Публичный адрес сайта без завершающего «/» (например, адрес туннеля).
+# Если пусто, адрес берётся из текущего запроса.
+PUBLIC_BASE_URL: str = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")

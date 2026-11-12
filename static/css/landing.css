@@ -34,6 +34,7 @@
   --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
 }
 
 :root[data-theme="dark"] {
@@ -42,7 +43,7 @@
   --raised: #322920;
   --ink: #f2e9da;
   --ink-2: #c3b4a1;
-  --ink-3: #8d7f71;
+  --ink-3: #9b8d7e;
   --line: rgba(242, 233, 218, 0.1);
   --line-strong: rgba(242, 233, 218, 0.18);
   --night: #15110e;
@@ -56,6 +57,7 @@
   --peach: #3a2a21;
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 14px 34px -18px rgba(0, 0, 0, 0.6);
   --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 26px 50px -20px rgba(0, 0, 0, 0.75);
+  color-scheme: dark;
 }
 :root[data-theme="dark"] .btn--primary { color: #2b221e; }
 
@@ -66,7 +68,7 @@
     --raised: #322920;
     --ink: #f2e9da;
     --ink-2: #c3b4a1;
-    --ink-3: #8d7f71;
+    --ink-3: #9b8d7e;
     --line: rgba(242, 233, 218, 0.1);
     --line-strong: rgba(242, 233, 218, 0.18);
     --night: #15110e;
@@ -80,6 +82,7 @@
     --peach: #3a2a21;
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 14px 34px -18px rgba(0, 0, 0, 0.6);
     --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 26px 50px -20px rgba(0, 0, 0, 0.75);
+    color-scheme: dark;
   }
   :root:not([data-theme="light"]) .btn--primary { color: #2b221e; }
 }
@@ -118,7 +121,7 @@ button { font: inherit; }
 }
 .nav.is-scrolled { border-bottom-color: var(--line); }
 .nav__inner { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); height: 68px; }
-.nav__brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 17px; font-weight: 600; letter-spacing: 0; }
+.nav__brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 17px; font-weight: 500; letter-spacing: 0; }
 .nav__brand .logo { color: var(--accent); }
 .nav__links { display: flex; gap: var(--s2); }
 .nav__links a { position: relative; font-size: 14px; color: var(--ink-2); text-decoration: none; padding: 8px 4px; }
@@ -202,6 +205,7 @@ button { font: inherit; }
 .hl { color: inherit; font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 0.07em; text-underline-offset: 0.14em; }
 .hero__sub { margin: var(--s3) auto 0; font-size: 18px; color: var(--ink-2); max-width: 52ch; }
 .hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s2); margin-top: var(--s4); }
+.hero__actions--start { justify-content: flex-start; }
 
 /* Сцена под заголовком: окно, телефон, наклейка */
 .hero__stage { position: relative; width: 100%; max-width: 780px; margin: var(--s5) auto 0; }
@@ -209,7 +213,7 @@ button { font: inherit; }
 .window__bar { display: flex; gap: 8px; align-items: center; height: 32px; padding: 0 12px; border-bottom: 1px solid var(--line); background: var(--raised); }
 .window__bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
 .window__img { display: block; width: 100%; height: auto; }
-.hero__phone { position: absolute; right: -7%; bottom: -48px; width: 25%; height: auto; border-radius: 22px; box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-lift); }
+.hero__phone { position: absolute; right: -7%; bottom: -48px; width: 25%; height: auto; border-radius: 24px; box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-lift); }
 
 /* Наклейка со сроком: фирменный мотив, перекрывает угол окна */
 .hero__tag {
@@ -224,7 +228,7 @@ button { font: inherit; }
   pointer-events: none;
 }
 .hero__tag small { font-size: 12px; line-height: 1.2; color: #6a5b4f; }
-.hero__date { font-size: 18px; font-weight: 600; line-height: 1.2; color: #a94430; font-variant-numeric: tabular-nums; }
+.hero__date { font-size: 18px; font-weight: 500; line-height: 1.2; color: #a94430; font-variant-numeric: tabular-nums; }
 .hero__tag .meter { width: 100%; height: 4px; margin-top: 8px; background: rgba(43, 34, 30, 0.12); }
 .hero__tag .meter b { transition: none; transform-origin: left center; }
 
@@ -232,7 +236,7 @@ button { font: inherit; }
   .hero__stage { max-width: 260px; margin-top: var(--s4); }
   .window { display: none; }
   .hero__phone { position: static; width: 100%; right: auto; }
-  .hero__tag { left: -16px; bottom: 28px; min-width: 148px; padding: 10px 12px 12px; }
+  .hero__tag { left: -16px; bottom: 28px; min-width: 148px; padding: 8px 12px 12px; }
 }
 
 /* Верхняя полоса с новостью */
@@ -266,10 +270,10 @@ html.lenis, html.lenis body { height: auto; }
 .features__hint { margin-top: var(--s3); font-size: 14px; color: var(--ink-3); }
 .features { list-style: none; display: grid; gap: var(--s2); margin: var(--s2) 0 var(--s4); padding: 0; }
 .feature { position: relative; padding: var(--s2) 52px var(--s2) var(--s3); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 16px; color: var(--ink-2); cursor: pointer; transition: color 160ms var(--ease), border-color 160ms var(--ease), box-shadow 160ms var(--ease), background-color 160ms var(--ease); }
-.feature:hover { color: var(--ink); border-color: var(--accent); box-shadow: 0 8px 20px -12px rgba(43, 34, 30, 0.35); }
+.feature:hover { color: var(--ink); border-color: var(--accent); }
 .feature:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .feature.is-active { color: var(--ink); border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
-.feature__title { display: block; font-size: 18px; font-weight: 600; }
+.feature__title { display: block; font-size: 18px; font-weight: 500; }
 .feature__chev { position: absolute; right: 20px; top: 20px; color: var(--ink-3); transition: transform 160ms var(--ease), color 160ms var(--ease); }
 .feature:hover .feature__chev { color: var(--accent); transform: translateX(3px); }
 .feature.is-active .feature__chev { color: var(--accent); transform: rotate(90deg); }
@@ -288,7 +292,7 @@ html.lenis, html.lenis body { height: auto; }
 
 /* Чат Telegram: настоящие тексты бота */
 .chat { display: grid; gap: 12px; width: 100%; max-width: 400px; padding: var(--s3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-soft); }
-.chat__head { display: flex; align-items: center; gap: 8px; font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.chat__head { display: flex; align-items: center; gap: 8px; font-weight: 500; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .chat__avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--green); }
 .bubble { max-width: 86%; padding: 12px 16px; background: var(--raised); border-radius: 18px 18px 18px 6px; font-size: 15px; }
 .bubble--me { justify-self: end; background: var(--sage); border-radius: 18px 18px 6px 18px; }
@@ -299,7 +303,7 @@ html.lenis, html.lenis body { height: auto; }
 .faq__item summary {
   cursor: pointer; list-style: none;
   padding: var(--s2) var(--s3);
-  font-weight: 600;
+  font-weight: 500;
   display: flex; justify-content: space-between; align-items: center; gap: var(--s2);
   transition: color 160ms var(--ease);
 }
@@ -319,7 +323,7 @@ html.lenis, html.lenis body { height: auto; }
 @media (min-width: 900px) {
   .split--golden { grid-template-columns: 1fr 1.618fr; gap: var(--s6); }
   .split--golden.split--start { align-items: start; }
-  .faq__head { position: sticky; top: 110px; }
+  .faq__head { position: sticky; top: 112px; }
 }
 
 /* Финал: тёмный блок без градиента и свечения */
@@ -361,6 +365,7 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .js .reveal { opacity: 1; transform: none; }
 }
@@ -405,9 +410,9 @@ html.lenis, html.lenis body { height: auto; }
 .how__head .section__title { margin: 0 auto; max-width: 18ch; }
 .how__head .section__lead { margin: var(--s2) auto 0; color: rgba(255, 250, 241, 0.88); }
 .how { display: grid; gap: var(--s3); margin-top: var(--s5); }
-.how__card { display: flex; flex-direction: column; gap: var(--s1); padding: var(--s3); background: #fffaf1; color: #2b221e; border-radius: 20px; box-shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.55); }
-.how__demo { display: grid; align-content: center; gap: 8px; min-height: 184px; margin-bottom: var(--s2); padding: var(--s2); background: #f6f0e4; border-radius: 12px; }
-.how__num { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #a94430; font-variant-numeric: tabular-nums; }
+.how__card { display: flex; flex-direction: column; gap: var(--s1); padding: var(--s3); background: #fffaf1; color: #2b221e; border-radius: 16px; box-shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.55); }
+.how__demo { display: grid; align-content: center; gap: 8px; min-height: 184px; margin-bottom: var(--s2); padding: var(--s2); background: #f6f0e4; border-radius: 16px; }
+.how__num { font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: #a94430; font-variant-numeric: tabular-nums; }
 .how__card h3 { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.2; }
 .how__card p { font-size: 15px; color: #6a5b4f; }
 @media (min-width: 900px) {
@@ -418,19 +423,32 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* Фрагменты внутри карточек: цвета фиксированы, это «бумага» в любой теме */
-.chip { justify-self: start; padding: 4px 8px; background: #e2eed8; color: #2f5f3c; border-radius: 999px; font-size: 12px; font-weight: 600; }
-.field { padding: 8px 12px; background: #fffaf1; border: 1px solid rgba(43, 34, 30, 0.14); border-radius: 10px; display: grid; gap: 2px; }
+.chip { justify-self: start; padding: 4px 8px; background: #e2eed8; color: #2f5f3c; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.field { padding: 8px 12px; background: #fffaf1; border: 1px solid rgba(43, 34, 30, 0.14); border-radius: 4px; display: grid; gap: 2px; }
 .field small { font-size: 12px; color: #6a5b4f; }
-.field b { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.prow { display: grid; grid-template-columns: 4.5rem 1fr 3.5rem; align-items: center; gap: 8px; padding: 8px 12px; background: #fffaf1; border-radius: 10px; font-size: 14px; }
-.prow span { font-weight: 600; }
+.field b { font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.prow { display: grid; grid-template-columns: 4.5rem 1fr 3.5rem; align-items: center; gap: 8px; padding: 8px 12px; background: #fffaf1; border-radius: 4px; font-size: 14px; }
+.prow span { font-weight: 500; }
 .prow em { font-style: normal; text-align: right; color: #6a5b4f; font-variant-numeric: tabular-nums; }
 .prow .meter { width: 100%; height: 8px; background: rgba(43, 34, 30, 0.12); }
-.tg { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.tg { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
 .tg__avatar { width: 24px; height: 24px; border-radius: 50%; background: #5a9b6b; }
-.tg__msg { padding: 10px 14px; background: #fffaf1; border-radius: 16px 16px 16px 4px; font-size: 14px; color: #2b221e; box-shadow: 0 1px 2px rgba(43, 34, 30, 0.12); }
+.tg__msg { padding: 12px 16px; background: #fffaf1; border-radius: 16px 16px 16px 4px; font-size: 14px; color: #2b221e; box-shadow: 0 1px 2px rgba(43, 34, 30, 0.12); }
 
 /* Вход через Telegram: своя кнопка вместо iframe-виджета, стили общие с .btn */
-.login { padding: 56px 0; text-align: center; }
-.login h1 { margin-bottom: 12px; }
-.tg-login { min-height: 52px; margin-top: 24px; padding: 0 28px; gap: 12px; }
+.login { padding: var(--s5) var(--s3) var(--s6); }
+.login__card {
+  display: grid; justify-items: center; gap: var(--s1);
+  max-width: 440px; margin: 0 auto;
+  padding: var(--s4) var(--s3);
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
+}
+.login__logo { color: var(--accent); margin-bottom: var(--s1); }
+.login h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 5vw, 2.25rem); line-height: 1.2; letter-spacing: -0.015em; }
+.login p { color: var(--ink-2); }
+.tg-login { min-height: 52px; margin-top: var(--s3); padding: 0 28px; gap: 12px; }
+.login__back { height: 40px; font-size: 14px; }

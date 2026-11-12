@@ -124,6 +124,38 @@ def test_both_languages_have_the_same_keys():
     for key, value in TEXTS["en"].items():
         assert value.strip(), f"empty English text for {key}"
 
+def _login_button_href(page_html: str) -> str:
+    import re
+    from urllib.parse import parse_qs, urlsplit
+
+    match = re.search(r'class="btn btn--primary tg-login" href="([^"]+)"', page_html)
+    assert match, "кнопка входа не найдена"
+    return html.unescape(match.group(1))
+
+
+def test_login_on_vercel_host_points_to_telegram_bot(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "PUBLIC_BASE_URL", "")
+    response = TestClient(app).get("/login", headers={"host": "fridge-keeper-eight.vercel.app"})
+    assert response.status_code == 200
+    assert _login_button_href(response.text) == "https://t.me/FridgeKeeper_MESSAGE_BOT"
+
+
+def test_login_with_public_base_url_returns_to_it(monkeypatch):
+    import app as app_module
+    from urllib.parse import parse_qs, urlsplit
+
+    public = "https://example-tunnel.trycloudflare.com"
+    monkeypatch.setattr(app_module, "PUBLIC_BASE_URL", public)
+    response = TestClient(app).get("/login", headers={"host": "fridge-keeper-eight.vercel.app"})
+    href = _login_button_href(response.text)
+    assert href.startswith("https://oauth.telegram.org/auth?")
+    query = parse_qs(urlsplit(href).query)
+    assert query["origin"] == [public]
+    assert query["return_to"][0].startswith(public + "/auth/login-widget")
+
+
 def _hero_pieces(lang: str) -> list[str]:
     t = TEXTS[lang]
     return [t["hero_title_pre"], t["hero_title_hl"], t["hero_title_post"]]

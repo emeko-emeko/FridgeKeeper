@@ -12,11 +12,13 @@
       --text: var(--tg-theme-text-color, #1f1f1f);
       --hint: var(--tg-theme-hint-color, #6b6b6b);
       --card: var(--tg-theme-secondary-bg-color, #f2f2f4);
-      --btn: var(--tg-theme-button-color, #2a7ae2);
+      --btn: var(--tg-theme-button-color, #b84b34);
       --btn-text: var(--tg-theme-button-text-color, #ffffff);
-      --danger: #c62828;
-      --radius: 14px;
+      --danger: var(--tg-theme-destructive-text-color, #c62828);
+      --radius: 16px;
+      color-scheme: light dark;
     }
+    :focus-visible { outline: 2px solid var(--btn); outline-offset: 2px; }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -46,6 +48,7 @@
       width: 100%;
       font: inherit;
       font-weight: 500;
+      min-height: 48px;
       padding: 12px;
       margin-top: 12px;
       border-radius: 12px;
@@ -84,7 +87,7 @@
     }
     .saved {
       color: var(--text);
-      font-weight: 600;
+      font-weight: 500;
       margin: 0;
     }
   </style>

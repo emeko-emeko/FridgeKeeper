@@ -1,11 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 <main class="container login">
-  <h1>{{ t.login_title }}</h1>
-  <p>{{ t.login_hint }}</p>
-  <a class="btn btn--primary tg-login" href="{{ telegram_url }}" rel="nofollow">
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9.8 15.2l-.4 4.2c.6 0 .8-.3 1.1-.6l2.6-2.5 5.4 3.9c1 .5 1.7.3 1.9-.9l3.5-16.4c.3-1.5-.5-2.1-1.5-1.7L1.6 9.6c-1.4.6-1.4 1.4-.3 1.7l5.4 1.7L19.7 5c.6-.4 1.2-.2.7.2z"/></svg>
-    <span>{{ t.login_button }}</span>
-  </a>
+  <div class="login__card">
+    <svg class="login__logo" viewBox="0 0 32 32" width="40" height="40" aria-hidden="true">
+      <rect x="5" y="2" width="22" height="28" rx="7" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="5" y1="12.5" x2="27" y2="12.5" stroke="currentColor" stroke-width="2"/>
+      <rect x="22.5" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/>
+      <rect x="22.5" y="16" width="2.4" height="6" rx="1.2" fill="currentColor"/>
+    </svg>
+    <h1>{{ t.login_title }}</h1>
+    <p>{{ t.login_hint }}</p>
+    <a class="btn btn--primary tg-login" href="{{ telegram_url }}" rel="nofollow">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9.8 15.2l-.4 4.2c.6 0 .8-.3 1.1-.6l2.6-2.5 5.4 3.9c1 .5 1.7.3 1.9-.9l3.5-16.4c.3-1.5-.5-2.1-1.5-1.7L1.6 9.6c-1.4.6-1.4 1.4-.3 1.7l5.4 1.7L19.7 5c.6-.4 1.2-.2.7.2z"/></svg>
+      <span>{{ t.login_button }}</span>
+    </a>
+    <a class="btn btn--link login__back" href="/?lang={{ lang }}">{{ t.login_back }}</a>
+  </div>
 </main>
 {% endblock %}

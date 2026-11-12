@@ -207,7 +207,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "app_add_title": "Добавить продукт",
         "app_name": "Название",
         "app_date": "Годен до",
-        "app_date_hint": "Дату можно не указывать",
+        "app_date_hint": "Дату можно не указывать.",
         "app_add": "Добавить",
         "app_photo": "Добавить по фото",
         "app_photo_note": "Фото не сохраняется: оно читается и сразу отбрасывается.",
@@ -267,7 +267,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "shelf_pickles_hint": "Маринованные огурцы · 60 дн",
         "login_title": "Вход",
         "login_hint": "Нажмите кнопку ниже, чтобы войти",
-        "login_button": "Войти через Telegram"
+        "login_button": "Войти через Telegram",
+        "login_back": "На главную"
     },
     "en": {
         "html_lang": "en",
@@ -462,7 +463,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "app_add_title": "Add a product",
         "app_name": "Name",
         "app_date": "Best before",
-        "app_date_hint": "The date is optional",
+        "app_date_hint": "The date is optional.",
         "app_add": "Add",
         "app_photo": "Add from a photo",
         "app_photo_note": "The photo is not stored: it is read and discarded right away.",
@@ -522,7 +523,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "shelf_pickles_hint": "Pickles · 60 d",
         "login_title": "Sign in",
         "login_hint": "Press the button below to sign in",
-        "login_button": "Sign in with Telegram"
+        "login_button": "Sign in with Telegram",
+        "login_back": "Back to home"
     },
 }
 

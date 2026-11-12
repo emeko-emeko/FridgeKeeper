@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from api.auth import SESSION_COOKIE, read_session_token
-from core.config import TELEGRAM_TOKEN
+from core.config import PUBLIC_BASE_URL, TELEGRAM_TOKEN
 from api.auth import router as auth_router
 from api.products import router as products_router
 from core.i18n import (
@@ -101,13 +101,19 @@ async def login_page(request: Request) -> HTMLResponse:
     поэтому запускать uvicorn нужно с --proxy-headers (см. инструкцию).
     """
     lang, save_lang = resolve_lang(request)
-    auth_url = str(request.base_url).rstrip("/") + "/auth/login-widget"
-    # Кнопка ведёт на страницу входа Telegram; она вернёт пользователя на auth_url с подписью.
-    origin = str(request.base_url).rstrip("/")
-    bot_id = TELEGRAM_TOKEN.split(":")[0] if TELEGRAM_TOKEN else ""
-    telegram_url = "https://oauth.telegram.org/auth?" + urlencode(
-        {"bot_id": bot_id, "origin": origin, "request_access": "write", "return_to": auth_url}
-    )
+    # Адрес сайта: из PUBLIC_BASE_URL, если задан; иначе из запроса.
+    site = PUBLIC_BASE_URL or str(request.base_url).rstrip("/")
+    auth_url = site + "/auth/login-widget"
+    origin = site
+    if not PUBLIC_BASE_URL and (request.url.hostname or "").endswith(".vercel.app"):
+        # Копия на Vercel не имеет БД и сессий: вход ведём через бота.
+        telegram_url = TELEGRAM_BOT_URL
+    else:
+        # Кнопка ведёт на страницу входа Telegram; она вернёт пользователя на auth_url с подписью.
+        bot_id = TELEGRAM_TOKEN.split(":")[0] if TELEGRAM_TOKEN else ""
+        telegram_url = "https://oauth.telegram.org/auth?" + urlencode(
+            {"bot_id": bot_id, "origin": origin, "request_access": "write", "return_to": auth_url}
+        )
     return render(request, "login.html", lang, save_lang, {"auth_url": auth_url, "telegram_url": telegram_url})
 
 
