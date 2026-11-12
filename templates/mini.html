@@ -6,24 +6,93 @@
   <title>FridgeKeeper</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { font-family: system-ui, sans-serif; padding: 16px; margin: 0; }
-    h1 { font-size: 22px; margin: 0 0 12px; }
-    h2 { font-size: 17px; margin: 0 0 8px; }
-    .hidden { display: none; }
-    .card { border: 1px solid #ccc; border-radius: 10px; padding: 12px; margin-top: 12px; }
-    .btn { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid #888;
-           background: #f4f4f4; width: 100%; box-sizing: border-box; margin-top: 8px; }
-    .btn-primary { background: #2a7ae2; color: #fff; border-color: #2a7ae2; }
-    input[type=text], input[type=date] { font: inherit; width: 100%; box-sizing: border-box;
-           padding: 8px; margin-top: 4px; }
-    label { display: block; margin-top: 8px; font-size: 14px; }
-    .warn { color: #b00020; font-weight: 600; margin-top: 8px; }
-    .muted { color: #666; font-size: 14px; }
+    /* Цвета берём из темы Telegram; запасные значения — для открытия не в Telegram. */
+    :root {
+      --bg: var(--tg-theme-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #1f1f1f);
+      --hint: var(--tg-theme-hint-color, #6b6b6b);
+      --card: var(--tg-theme-secondary-bg-color, #f2f2f4);
+      --btn: var(--tg-theme-button-color, #2a7ae2);
+      --btn-text: var(--tg-theme-button-text-color, #ffffff);
+      --danger: #c62828;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.4;
+      color: var(--text);
+      background: var(--bg);
+    }
+    h1 { font-size: 22px; margin: 4px 0 4px; }
+    h2 { font-size: 17px; margin: 0 0 6px; }
+    .hidden { display: none !important; }
+    .subtitle { color: var(--hint); font-size: 14px; margin: 0 0 16px; }
+    .status { color: var(--hint); font-size: 14px; min-height: 20px; margin: 0 0 12px; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .muted { color: var(--hint); font-size: 14px; margin: 0 0 12px; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      font: inherit;
+      font-weight: 600;
+      padding: 14px;
+      margin-top: 10px;
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--hint);
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--btn); color: var(--btn-text); border: none; }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--hint);
+    }
+    input[type=text], input[type=date] {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+      padding: 12px;
+      font: inherit;
+      font-size: 16px;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--hint);
+      border-radius: 10px;
+    }
+
+    .suggest-hint { color: var(--hint); font-size: 14px; margin: 12px 0 0; }
+    .warn {
+      color: var(--danger);
+      font-weight: 600;
+      margin: 12px 0 0;
+    }
+    .saved {
+      color: var(--text);
+      font-weight: 600;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
   <h1>FridgeKeeper</h1>
-  <p id="status">Входим…</p>
+  <p class="subtitle">Контроль сроков годности</p>
+  <p id="status" class="status">Входим…</p>
 
   <section id="camera" class="hidden">
     <div class="card">
@@ -32,19 +101,20 @@
       <input id="photo" type="file" accept="image/*" capture="environment" class="hidden">
       <button id="snap" class="btn btn-primary" type="button">Сфотографировать</button>
       <p id="scanStatus" class="muted"></p>
+    </div>
 
-      <div id="result" class="hidden">
-        <label>Название
-          <input id="name" type="text" maxlength="100">
-        </label>
-        <label>Годен до
-          <input id="expiry" type="date">
-        </label>
-        <p id="expiredWarn" class="warn hidden">Срок уже истёк</p>
-        <p id="hint" class="muted"></p>
-        <button id="yes" class="btn btn-primary" type="button">Да</button>
-        <button id="no" class="btn" type="button">Нет, введу сам</button>
-      </div>
+    <div id="result" class="card hidden">
+      <h2>Проверьте данные</h2>
+      <label>Название
+        <input id="name" type="text" maxlength="100">
+      </label>
+      <label>Годен до
+        <input id="expiry" type="date">
+      </label>
+      <p id="expiredWarn" class="warn hidden">Срок уже истёк</p>
+      <p id="hint" class="suggest-hint"></p>
+      <button id="yes" class="btn btn-primary" type="button">Да, сохранить</button>
+      <button id="no" class="btn" type="button">Нет, введу сам</button>
     </div>
   </section>
 
@@ -107,7 +177,7 @@
         status.textContent = "Ошибка проверки: " + me.status;
         return;
       }
-      status.textContent = "Вы вошли";
+      status.textContent = "";
       camera.classList.remove("hidden");
     }
 
@@ -161,7 +231,9 @@
       });
       if (r.status === 201) {
         resetScan();
-        scanStatus.textContent = "Сохранено: " + name;
+        scanStatus.textContent = "";
+        status.textContent = "Сохранено: " + name;
+        status.className = "saved";
       } else {
         scanStatus.textContent = "Не сохранено: " + r.status;
       }

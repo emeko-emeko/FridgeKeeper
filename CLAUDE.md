@@ -210,6 +210,14 @@ FridgeKeeper\
   - Убрано из git-индекса (файлы на диске остались): `unslop` (gitlink) и `.playwright-mcp/` (10 файлов). Оба уже были в `.gitignore`.
   - Проверка: `uv export` → чистое venv → `pip check` «No broken requirements found»; маршруты `/`, `/login`, `/app`, `/mini` 200; `/products` без входа 401. `.venv` pytest → `58 passed, 1 warning`.
   - Правило изменено: при изменении зависимостей обновлять и `requirements.txt`, и `pyproject.toml` (Vercel берёт `pyproject.toml`).
+- **12.11.2026, итог сессии (вход в Telegram, Vercel, зависимости)**:
+  - Вход через Telegram в браузере на `127.0.0.1:8000/login`: виджет показывает «Bot domain invalid». Причина: домен не привязан к боту через BotFather `/setdomain`. Адрес туннеля не проверен, его нужно знать заранее.
+  - Vercel `https://fridge-keeper-eight.vercel.app`: 500 `FUNCTION_INVOCATION_FAILED` исправлен. Причина: в `pyproject.toml` не было `fastapi`, `jinja2`, `uvicorn`, и Vercel ставит зависимости из него. Коммиты `9b46b2e` (`requirements.txt`: `python-multipart`, `httpx`, `tzdata`) и `72873af` (`pyproject.toml`, `uv.lock`, untrack `unslop` и `.playwright-mcp`). Запушено в `origin/main`.
+  - Проверка после деплоя (`dpl_G2er5rV52PfUP2AQ1KNrHEKxwkto`, READY): `/`, `/login`, `/app`, `/mini` 200. Тесты `.venv`: 58 passed.
+  - Не проверено: `asyncpg` нет в `requirements.txt` (на Vercel не нужен, пока `DATABASE_URL` не postgres). Сценарий Mini App «Да»/«Нет, введу сам», `GET /products`. Ручной ввод срока на `/app`. Живой прогон планировщика в боте.
+  - Vercel MCP: scope `imansuper44-2979` доступен после подтверждения. `fridgekeeper-bot` (тот же репозиторий) падает с ERROR на последних трёх коммитах. Это отдельный проект, не сайт. Не разбирали.
+  - Редизайн `templates/mini.html` (по подтверждённому плану): цвета из темы Telegram (`--tg-theme-*`) с запасными значениями, крупные кнопки, блок «Проверьте данные» показывается только после распознавания, после сохранения в статусе «Сохранено: …». Логика JS не менялась (`/auth/mini-app`, `/products/scan`, `/products`, источники `ocr` / `manual`). Проверка: `.venv` pytest → `58 passed`; `/mini` → 200, в HTML есть `camera`, `snap`, `result`, `/products/scan`, кнопки «Да, сохранить» и «Нет, введу сам». Не проверено: вид в Telegram и сценарий входа на адресе туннеля (нужен живой Mini App).
+  - Готовность к редизайну: сайт на Vercel отвечает, бэкенд тестами покрыт. Перед редизайном `/mini` нужно: проверить вход на адресе туннеля, потом после редизайна пройти сценарий Mini App целиком.
   - Повторная проверка (12.11.2026): чистое venv: `pip check` → «No broken requirements found»; `import multipart, httpx, tzdata, fastapi` OK; маршруты `/` 200, `/login` 200, `/app` 200, `/mini` 200, `/products` без входа 401, `/auth/login-widget` без параметров 400. `uv`/`.venv` pytest → `58 passed, 1 warning`.
 
 ## Нерешённые вопросы и риски
