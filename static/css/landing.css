@@ -619,3 +619,44 @@ button { font: inherit; }
   .hero .hero__actions { justify-content: flex-start; }
   .hero .fridge-wrap { margin: 0; justify-self: center; width: 100%; }
 }
+
+/* Холодильник: материал, этикетка на дверце, опора */
+.door { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(43, 34, 30, 0.08); }
+.door--left { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(43, 34, 30, 0.08), inset -3px 0 4px -3px rgba(43, 34, 30, 0.2); }
+.door--right { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(43, 34, 30, 0.08), inset 3px 0 4px -3px rgba(43, 34, 30, 0.2); }
+:root[data-theme="dark"] .door,
+:root[data-theme="dark"] .door--left,
+:root[data-theme="dark"] .door--right { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(242, 233, 218, 0.08); }
+
+.door__tag {
+  position: absolute; top: 20%; left: 12px; right: 32px;
+  display: grid; gap: 2px;
+  padding: 8px 8px 12px;
+  background: #fffaf1; color: #2b221e;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(43, 34, 30, 0.2);
+  rotate: -2deg;
+  text-align: left;
+  pointer-events: none;
+}
+.door__tag small { font-size: 11px; line-height: 1.2; color: #6a5b4f; }
+.door__date { font-size: 13px; font-weight: 600; line-height: 1.2; color: #a94430; font-variant-numeric: tabular-nums; }
+.door__tag .meter { width: 100%; height: 4px; margin-top: 8px; background: rgba(43, 34, 30, 0.12); opacity: 1; }
+
+/* Тень на полу */
+.fridge::after {
+  content: ""; position: absolute; left: 6%; right: 6%; bottom: -20px; height: 16px;
+  border-radius: 50%;
+  background: rgba(43, 34, 30, 0.28);
+  filter: blur(8px);
+  pointer-events: none;
+}
+.fridge__info { margin-top: var(--s4); }
+
+/* Штамп срока на этикетке в секции «цель» */
+.label__facts .is-hot dd { border: 1.5px solid currentColor; border-radius: 4px; padding: 0 8px; rotate: -2deg; }
+
+@media (max-width: 599px) {
+  .hero .fridge-wrap, .fridge-wrap { max-width: 280px; margin-top: var(--s4); }
+  .door__tag { left: 10px; right: 26px; padding: 6px 6px 10px; }
+}

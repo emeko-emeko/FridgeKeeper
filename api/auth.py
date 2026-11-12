@@ -3,7 +3,7 @@
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -80,6 +80,21 @@ def current_user_id(request: Request) -> int:
     if not token or token not in SESSIONS:
         raise HTTPException(status_code=401, detail="Нужен вход")
     return SESSIONS[token]
+
+
+@router.post("/logout")
+async def logout(request: Request):
+    """Удаляет сессию (из cookie или заголовка) и сбрасывает cookie."""
+    header = request.headers.get("authorization", "")
+    if header.lower().startswith("bearer "):
+        token = header[7:].strip()
+    else:
+        token = request.cookies.get(SESSION_COOKIE)
+    if token:
+        SESSIONS.pop(token, None)
+    response = JSONResponse({"ok": True})
+    response.delete_cookie(SESSION_COOKIE)
+    return response
 
 
 @router.get("/me")

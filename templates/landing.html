@@ -53,7 +53,10 @@
             </div>
           </div>
 
-          <button class="door door--left" type="button" aria-expanded="false" aria-label="{{ t.hero_preview_label }}"><span class="door__handle" aria-hidden="true"></span></button>
+          <button class="door door--left" type="button" aria-expanded="false" aria-label="{{ t.hero_preview_label }}">
+            <span class="door__tag" aria-hidden="true"><small>{{ t.label_best_key }}</small><span class="door__date">{{ t.label_best_val }}</span><i class="meter"><b style="--w:22%;--c:var(--accent)"></b></i></span>
+            <span class="door__handle" aria-hidden="true"></span>
+          </button>
           <button class="door door--right" type="button" aria-expanded="false" aria-label="{{ t.hero_preview_label }}"><span class="door__handle" aria-hidden="true"></span></button>
         </div>
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ t.page_title }}</title>
+  <title>{% block title %}{{ t.page_title }}{% endblock %}</title>
   <meta name="description" content="{{ t.meta_description }}">
   <script>
     (function () {

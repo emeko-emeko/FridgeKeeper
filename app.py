@@ -1,4 +1,4 @@
-"""Веб-приложение FridgeKeeper: лендинг, вход и заглушка веб-интерфейса."""
+"""Веб-приложение FridgeKeeper: лендинг, вход и веб-интерфейс продуктов."""
 
 from __future__ import annotations
 
@@ -7,10 +7,11 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from api.auth import SESSION_COOKIE, SESSIONS
 from api.auth import router as auth_router
 from api.products import router as products_router
 from core.i18n import (
@@ -103,9 +104,12 @@ async def login_page(request: Request) -> HTMLResponse:
 
 
 @app.get("/app", response_class=HTMLResponse)
-async def app_placeholder(request: Request) -> HTMLResponse:
+async def web_app(request: Request):
+    """Веб-интерфейс списка продуктов. Без сессии отправляем на вход."""
+    if request.cookies.get(SESSION_COOKIE) not in SESSIONS:
+        return RedirectResponse(url="/login", status_code=303)
     lang, save_lang = resolve_lang(request)
-    return render(request, "app_placeholder.html", lang, save_lang)
+    return render(request, "app.html", lang, save_lang)
 
 
 @app.get("/mini", response_class=HTMLResponse)

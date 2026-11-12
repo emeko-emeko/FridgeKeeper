@@ -80,12 +80,37 @@ def test_language_toggle_points_to_other_language():
     assert 'href="http://testserver/?lang=ru"' in en_page
 
 
-def test_app_placeholder_page_renders_in_both_languages():
-    ru = client.get("/app?lang=ru")
-    en = client.get("/app?lang=en")
+def test_app_without_login_redirects_to_login():
+    response = TestClient(app).get("/app", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login"
+
+
+def test_app_page_renders_in_both_languages_after_login():
+    from api.auth import SESSION_COOKIE, SESSIONS
+
+    SESSIONS["web-test-token"] = 1
+    try:
+        logged = TestClient(app)
+        logged.cookies.set(SESSION_COOKIE, "web-test-token")
+        ru = logged.get("/app?lang=ru")
+        en = logged.get("/app?lang=en")
+    finally:
+        SESSIONS.pop("web-test-token", None)
     assert ru.status_code == 200 and en.status_code == 200
     assert TEXTS["ru"]["app_title"] in ru.text
     assert TEXTS["en"]["app_title"] in en.text
+    assert "/static/js/app.js" in ru.text
+
+
+def test_logout_removes_session():
+    from api.auth import SESSION_COOKIE, SESSIONS
+
+    SESSIONS["logout-token"] = 1
+    logged = TestClient(app)
+    logged.cookies.set(SESSION_COOKIE, "logout-token")
+    assert logged.post("/auth/logout").status_code == 200
+    assert "logout-token" not in SESSIONS
 
 
 def test_static_stylesheet_is_served():

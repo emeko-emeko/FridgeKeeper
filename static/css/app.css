@@ -1,0 +1,128 @@
+/* Веб-интерфейс /app. Переменные и кнопки берутся из landing.css. */
+
+.app { padding: var(--s5) 0 var(--s6); }
+.app__inner { max-width: 760px; }
+
+.app__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+.app__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.15;
+}
+.app__lead { margin: var(--s1) 0 0; color: var(--ink-2); line-height: 1.6; }
+.app__head-actions { display: flex; gap: var(--s1); }
+
+.app__notice {
+  min-height: 24px;
+  margin: 0 0 var(--s2);
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.app__notice.is-error { color: var(--accent); font-weight: 500; }
+
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--s3);
+  margin-bottom: var(--s4);
+}
+.app-card__title { margin: 0 0 var(--s2); font-size: 18px; font-weight: 600; }
+.app-list-title { margin-bottom: var(--s2); }
+
+.app-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--s2); }
+.app-field { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--ink-2); }
+.app-field--grow { flex: 1 1 220px; }
+.app-field input {
+  height: 48px;
+  padding: 0 var(--s2);
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+}
+.app-field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.app-hint { margin: var(--s1) 0 0; font-size: 13px; color: var(--ink-3); line-height: 1.5; }
+.app-photo { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
+.app-photo .app-hint { margin-top: var(--s1); }
+
+.app-review { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
+.app-review[hidden], .app-warn[hidden] { display: none; }
+.app-warn { margin: var(--s2) 0 0; color: var(--accent); font-weight: 600; }
+.app-actions { display: flex; flex-wrap: wrap; gap: var(--s1); margin-top: var(--s2); }
+
+.app-empty { margin: 0; color: var(--ink-2); }
+.app-empty:empty { display: none; }
+
+.app-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s1); }
+.app-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--s2) var(--s3);
+}
+/* Состояние показывает точка и текст срока, а не цветная полоса карточки. */
+.app-item::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+.app-item--expired::before { background: var(--accent); }
+.app-item--urgent::before { background: var(--orange); }
+.app-item--soon::before { background: var(--yellow); }
+.app-item--ok::before { background: var(--green); }
+.app-item:has(.app-item__edit)::before { display: none; }
+
+.app-item__main { flex: 1 1 200px; min-width: 0; }
+.app-item__name { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.app-item__meta { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); }
+.app-item--expired .app-item__meta { color: var(--accent); font-weight: 500; }
+
+.app-item__buttons { display: flex; gap: var(--s1); }
+.app-link {
+  height: 40px;
+  padding: 0 var(--s2);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.app-link:hover { border-color: var(--ink); }
+.app-link--danger:hover { border-color: var(--accent); color: var(--accent); }
+.app-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app-item__edit { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--s1); width: 100%; }
+.app-item__edit .app-field input { height: 44px; }
+
+@media (max-width: 560px) {
+  .app { padding-top: var(--s4); }
+  .app-form .btn, .app-actions .btn { width: 100%; }
+  .app-field, .app-item__edit .app-field { flex: 1 1 100%; width: 100%; }
+  .app-field input { width: 100%; min-width: 0; }
+  .app-item { padding: var(--s2); }
+  .app-item__buttons { width: 100%; }
+  .app-item__buttons .app-link { flex: 1; }
+}

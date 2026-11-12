@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.app_page_title }}{% endblock %}
+
+{% block content %}
+<main class="app">
+  <div class="container app__inner">
+    <header class="app__head">
+      <div>
+        <h1 class="app__title">{{ t.app_title }}</h1>
+        <p class="app__lead">{{ t.app_lead }}</p>
+      </div>
+      <div class="app__head-actions">
+        <a class="btn btn--ghost btn--small" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.app_bot }}</a>
+        <button class="btn btn--ghost btn--small" id="logout" type="button">{{ t.app_logout }}</button>
+      </div>
+    </header>
+
+    <p id="notice" class="app__notice" role="status" aria-live="polite"></p>
+
+    <section class="app-card" aria-labelledby="add-title">
+      <h2 id="add-title" class="app-card__title">{{ t.app_add_title }}</h2>
+      <form id="add-form" class="app-form" autocomplete="off">
+        <label class="app-field app-field--grow">
+          <span>{{ t.app_name }}</span>
+          <input id="add-name" type="text" maxlength="100" required>
+        </label>
+        <label class="app-field">
+          <span>{{ t.app_date }}</span>
+          <input id="add-date" type="date">
+        </label>
+        <button class="btn btn--primary" type="submit">{{ t.app_add }}</button>
+      </form>
+      <p class="app-hint">{{ t.app_date_hint }}</p>
+
+      <div class="app-photo">
+        <input id="photo" type="file" accept="image/*" hidden>
+        <button class="btn btn--ghost" id="photo-btn" type="button">{{ t.app_photo }}</button>
+        <p class="app-hint">{{ t.app_photo_note }}</p>
+      </div>
+
+      <form id="review" class="app-review" hidden>
+        <p id="review-hint" class="app-hint"></p>
+        <div class="app-form">
+          <label class="app-field app-field--grow">
+            <span>{{ t.app_name }}</span>
+            <input id="review-name" type="text" maxlength="100">
+          </label>
+          <label class="app-field">
+            <span>{{ t.app_date }}</span>
+            <input id="review-date" type="date">
+          </label>
+        </div>
+        <p id="review-warn" class="app-warn" hidden></p>
+        <div class="app-actions">
+          <button class="btn btn--primary" id="review-yes" type="submit"></button>
+          <button class="btn btn--ghost" id="review-no" type="button"></button>
+        </div>
+      </form>
+    </section>
+
+    <section aria-labelledby="list-title">
+      <h2 id="list-title" class="app-card__title app-list-title">{{ t.app_list_title }}</h2>
+      <p id="empty" class="app-empty"></p>
+      <ul id="list" class="app-list"></ul>
+    </section>
+  </div>
+</main>
+<link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+<script src="{{ url_for('static', path='js/app.js') }}" defer></script>
+{% endblock %}
