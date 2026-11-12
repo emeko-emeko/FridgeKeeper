@@ -40,3 +40,11 @@ async def test_find_by_name_ignores_case_and_spaces_and_other_users(session):
 
     assert len(rows) == 1
     assert rows[0].user_id == user.id
+
+
+def test_bot_menu_commands_are_all_in_help():
+    from bot.formatting import BOT_COMMANDS, HELP_TEXT
+
+    for command, description in BOT_COMMANDS:
+        assert f"/{command}" in HELP_TEXT
+        assert 0 < len(description) <= 256

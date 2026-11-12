@@ -65,3 +65,14 @@ def format_products(products: Sequence[Product]) -> str:
         # Название пользователя экранируем: Telegram разбирает HTML-разметку
         lines.append(f"• {html.escape(product.name)} — до {expiry}")
     return "\n".join(lines)
+
+
+# Меню команд в Telegram: появляется, когда пользователь набирает «/»
+BOT_COMMANDS: list[tuple[str, str]] = [
+    ("start", "Регистрация и приветствие"),
+    ("help", "Список команд и как пользоваться"),
+    ("my_products", "Мои продукты и сроки годности"),
+    ("add", "Добавить продукт: /add Название; ДД.ММ.ГГГГ"),
+    ("soon", "Что истекает в ближайшие 3 дня"),
+    ("delete", "Удалить продукт: /delete Название"),
+]
