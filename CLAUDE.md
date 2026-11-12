@@ -385,3 +385,16 @@ FridgeKeeper\
   - `team-controller` (Haiku 5.5): вердикт «вернуть дизайнеру (точечно)». Дизайнер исправил: ссылка «На главную» сохраняет `?lang=`, удалён мёртвый `.band__img` в `effects.js`. Вопросы пользователю: радиус 4 px у `.field`/`.prow` (токен `--r-sm` 10 px), тень `.feature:hover`, `--ink-3` `#9b8d7e` и sticky 112 px.
   - Проверка: `uv run pytest -q` → `66 passed, 1 warning in 5.05s`; `node --check static/js/effects.js` → без ошибок.
   - Не проверено глазами: светлая и тёмная тема, 390 px, вход на Vercel (Telegram → cookie → `/app`), `/setdomain` для `fridge-keeper-eight.vercel.app`. Не закоммичено, деплой не делали: ждём подтверждения пользователя.
+
+- **14.11.2026, вход через Telegram, дизайн и декор (сессия с командой агентов)**:
+  - **Коммит `f85d84e`** («Login via Telegram: fix Vercel redirect; redesign pages»), запушен в `origin/main`. Кнопка входа на `*.vercel.app` вела в Telegram через oauth с origin на Vercel; сделан вариант «б»: без `PUBLIC_BASE_URL` кнопка вела в бота. Визуальный проход: `base.html`, `landing.html`, `login.html`, `mini.html`, `landing.css`, `app.css`, `i18n.py` (`login_back`). `unslop-reviewer` нашёл 16 пунктов, механические (вес, радиусы, отступы, точка, fallback-цвет, favicon, кривая) применены через `unslop-fixer`. Остальное ждёт решения пользователя.
+  - **Коммит `890f9b6`** («Login via Login Widget on Vercel; dither accent in headings»), запушен. По подтверждению пользователя (`/setdomain` для `fridge-keeper-eight.vercel.app`, пользователь сказал, что уже делал) вход возвращён на Telegram Login Widget на всех хостах; ветка «бот для Vercel» удалена, тест переписан. Декор: `static/img/dither.svg`, класс `.hl--dither` (жёлтый маркер за словом, одноразовая анимация через ScrollTrigger), маркер стоит в hero и в «Как это работает» по решению пользователя. «ты» → «вы» в `problem3_*`.
+  - **Не закоммичено**: горизонтальные полосы узора у нижнего края первого экрана (`.hero__bands`, `static/img/dither-bands.svg`, `templates/landing.html`, `static/css/landing.css`). Вертикальные полосы по краям сначала были сделаны, потом убраны по уточнению пользователя. Позиция `top: calc(100svh - 200px)` выставлена по расчёту, в браузере не проверена.
+  - **Проверка**: `uv run pytest -q` → `66 passed, 1 warning in 5.04s` (последний прогон). `node --check static/js/effects.js` → без ошибок (прогон до последней правки CSS).
+  - **Открыто**:
+    1. Жёлтые надписи «Проблемы» и цифры 01–03 на светлом фоне: контраст около 1,3:1, ниже 4,5:1. Пользователь велел оставить, решение за ним.
+    2. Цвета узора совпадают с цветами статусов сроков (MASTER.md описывает их как смысловые). Пользователь оставил как есть.
+    3. `design-system/` не отслеживается, не коммитить.
+    4. Вход на Vercel в браузере не проверен после деплоя `890f9b6`: нужно нажать кнопку на `/login` и дойти до `/app`.
+    5. Проверки глазами не делались: светлая и тёмная тема, 390 px, полосы на 600–1000 px, Mini App в Telegram.
+    6. Деплой последнего коммита на Vercel не проверен через MCP; проверка по `curl` на `/login` не делалась после `890f9b6`.

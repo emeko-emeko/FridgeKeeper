@@ -203,15 +203,19 @@ button { font: inherit; }
   letter-spacing: -0.03em;
 }
 .hl { color: inherit; font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 0.07em; text-underline-offset: 0.14em; }
-/* Ключевое слово: жёлтая полоса за текстом и пиксельный узор под ним. Текст тёмный на жёлтом в обеих темах */
+/* Ключевое слово: жёлтая полоса за текстом. Текст тёмный на жёлтом в обеих темах */
 .hl--dither { position: relative; display: inline-block; isolation: isolate; color: #2b221e; text-decoration: none; }
-.hl--dither::before, .hl--dither::after { content: ""; position: absolute; z-index: -1; transform-origin: left center; transition: transform 700ms var(--ease) var(--mark-delay, 0ms); }
-.hl--dither::before { left: -0.12em; right: -0.12em; top: 0.1em; bottom: 0.02em; background: var(--yellow); }
-.hl--dither::after { left: -0.12em; right: -0.12em; bottom: -16px; height: 16px; background: url("/static/img/dither.svg") 0 0 / 8px 16px repeat-x; image-rendering: pixelated; transition-delay: calc(var(--mark-delay, 0ms) + 200ms); }
-.js .hl--dither:not(.is-marked)::before, .js .hl--dither:not(.is-marked)::after { transform: scaleX(0); }
+.hl--dither::before { content: ""; position: absolute; z-index: -1; transform-origin: left center; transition: transform 700ms var(--ease) var(--mark-delay, 0ms); left: -0.12em; right: -0.12em; top: 0.1em; bottom: 0.02em; background: var(--yellow); }
+.js .hl--dither:not(.is-marked)::before { transform: scaleX(0); }
 .hero .hl--dither { --mark-delay: 900ms; }
 .section--terra .hl.hl--dither { color: #2b221e; }
-@media (prefers-reduced-motion: reduce) { .hl--dither::before, .hl--dither::after { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .hl--dither::before { transition: none; } }
+
+/* Горизонтальные узорные полосы на всю ширину у нижнего края первого экрана */
+.hero { overflow-x: clip; }
+.hero > .container { position: relative; z-index: 1; }
+.hero__bands { position: absolute; left: 0; right: 0; top: calc(100svh - 200px); height: 144px; background: url("/static/img/dither-bands.svg") 0 0 / 16px 144px repeat-x; image-rendering: pixelated; pointer-events: none; z-index: 0; }
+@media (max-width: 599px) { .hero__bands { height: 72px; background-size: 8px 72px; } }
 
 .hero__sub { margin: var(--s3) auto 0; font-size: 18px; color: var(--ink-2); max-width: 52ch; }
 .hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s2); margin-top: var(--s4); }
