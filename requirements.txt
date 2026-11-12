@@ -13,3 +13,4 @@ tzdata==2026.6
 # Для тестов
 pytest==9.2.0
 pytest-asyncio==1.4.1.post1
+asyncpg==0.32.0
