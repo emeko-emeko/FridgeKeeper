@@ -56,3 +56,6 @@ SESSION_SECRET: str = os.getenv("SESSION_SECRET", "") or __import__("secrets").t
 # Публичный адрес сайта без завершающего «/» (например, адрес туннеля).
 # Если пусто, адрес берётся из текущего запроса.
 PUBLIC_BASE_URL: str = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+
+# Адрес сайта для ссылок из бота (бот работает на ПК, сайт на Vercel).
+SITE_URL: str = PUBLIC_BASE_URL or "https://fridge-keeper-eight.vercel.app"

@@ -13,7 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import SESSION_SECRET
 from core.database import SessionFactory
-from core.telegram_auth import TelegramAuthError, verify_login_widget, verify_mini_app
+from core.telegram_auth import (
+    TelegramAuthError,
+    verify_bot_login_token,
+    verify_login_widget,
+    verify_mini_app,
+)
 from core.users import get_or_create_user
 from models import LinkToken  # noqa: F401 — модели регистрируются через models
 
@@ -54,6 +59,8 @@ async def get_session() -> AsyncSession:
         yield session
 
 
+# НЕ УДАЛЯТЬ: старый вход через Telegram Login Widget. Оставлен по решению пользователя,
+# на случай если вход через бота не работает. Основной вход теперь через /auth/bot-callback.
 @router.get("/login-widget")
 async def login_widget_callback(request: Request, session: AsyncSession = Depends(get_session)):
     """Telegram Login Widget перенаправляет сюда с параметрами пользователя."""
@@ -69,6 +76,30 @@ async def login_widget_callback(request: Request, session: AsyncSession = Depend
     response = RedirectResponse(url="/app", status_code=303)
     response.set_cookie(
         SESSION_COOKIE, token, httponly=True, secure=True, samesite="lax", max_age=SESSION_TTL_SECONDS
+    )
+    return response
+
+
+@router.get("/bot-callback")
+async def bot_login_callback(t: str = "", session: AsyncSession = Depends(get_session)):
+    """Ссылка «Войти на сайт» из бота. Проверяем подпись бота и ставим cookie сессии.
+
+    Ошибки не показываем JSON-ом: возвращаем на страницу входа с кодом ошибки.
+    """
+    try:
+        telegram_id = verify_bot_login_token(t)
+    except TelegramAuthError:
+        return RedirectResponse(url="/login?err=bot", status_code=303)
+
+    user = await get_or_create_user(session, telegram_id)
+    response = RedirectResponse(url="/app", status_code=303)
+    response.set_cookie(
+        SESSION_COOKIE,
+        make_session_token(user.id),
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=SESSION_TTL_SECONDS,
     )
     return response
 

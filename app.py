@@ -105,12 +105,26 @@ async def login_page(request: Request) -> HTMLResponse:
     site = PUBLIC_BASE_URL or str(request.base_url).rstrip("/")
     auth_url = site + "/auth/login-widget"
     origin = site
-    # Кнопка ведёт на страницу входа Telegram; она вернёт пользователя на auth_url с подписью.
+    # НЕ УДАЛЯТЬ: старый вход через Login Widget (oauth.telegram.org). Оставлен по решению пользователя.
     bot_id = TELEGRAM_TOKEN.split(":")[0] if TELEGRAM_TOKEN else ""
     telegram_url = "https://oauth.telegram.org/auth?" + urlencode(
         {"bot_id": bot_id, "origin": origin, "request_access": "write", "return_to": auth_url}
     )
-    return render(request, "login.html", lang, save_lang, {"auth_url": auth_url, "telegram_url": telegram_url})
+    # Основной вход: бот присылает ссылку на /auth/bot-callback (см. bot/handlers.py)
+    bot_login_url = TELEGRAM_BOT_URL + "?start=login"
+    login_error = request.query_params.get("err") == "bot"
+    return render(
+        request,
+        "login.html",
+        lang,
+        save_lang,
+        {
+            "auth_url": auth_url,
+            "telegram_url": telegram_url,
+            "bot_login_url": bot_login_url,
+            "login_error": login_error,
+        },
+    )
 
 
 @app.get("/app", response_class=HTMLResponse)

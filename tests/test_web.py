@@ -128,7 +128,8 @@ def _login_button_href(page_html: str) -> str:
     import re
     from urllib.parse import parse_qs, urlsplit
 
-    match = re.search(r'class="btn btn--primary tg-login" href="([^"]+)"', page_html)
+    # Старая кнопка Login Widget: класс tg-login (вторичная кнопка после появления входа через бота)
+    match = re.search(r'class="[^"]*tg-login[^"]*" href="([^"]+)"', page_html)
     assert match, "кнопка входа не найдена"
     return html.unescape(match.group(1))
 

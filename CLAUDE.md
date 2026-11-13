@@ -316,6 +316,14 @@ FridgeKeeper\
   - Пользователь сообщил, что до этого web.telegram.org работал без проблем несколько минут. Вероятная причина: ограничение частоты попыток на стороне Telegram после нескольких нажатий «Далее». Не подтверждено.
   - Не проверено: вход после паузы; обходной вход через бота (`core/linking.py`) не реализован, нужен план и подтверждение.
   - Ответ по правкам интерфейса: в этой сессии файлы не менялись. UI-коммиты с 12.11 21:03: `c13fbbc`, `9ce1327`, `952ce3f`, `7007abf`, `f85d84e`, `890f9b6`, `85468f7`, `6fca26f`, `eb04620`, `e0e79c9`, `e74a800`, `1bbc413`.
+- **14.11.2026, вход через бота (по запросу пользователя, Login Widget оставлен)**:
+  - Как работает: `/login` → кнопка «Войти через бота» открывает `t.me/FridgeKeeper_MESSAGE_BOT?start=login` → бот отвечает кнопкой «Войти на сайт» со ссылкой `/auth/bot-callback?t=…` → сайт проверяет подпись и ставит cookie `fk_session` → `/app`. Ссылка действует 5 минут. Миграции БД не нужны.
+  - Код: `core/telegram_auth.py` (`make_bot_login_token`, `verify_bot_login_token`, `build_bot_login_url`; ключ подписи = SHA-256 от `"fk-bot-login:" + TELEGRAM_TOKEN`), `api/auth.py` (`GET /auth/bot-callback`), `bot/handlers.py` (`/start login`), `app.py` (`/login`, параметр `?err=bot`), `templates/login.html`, `core/i18n.py` (`login_bot_*`, `login_legacy_hint`), `core/config.py` (`SITE_URL`).
+  - **НЕ УДАЛЯТЬ**: старый вход через Login Widget (`/auth/login-widget`, `oauth.telegram.org`, блок `.login__legacy` на `/login`). Помечен комментариями в `api/auth.py`, `app.py`, `templates/login.html`.
+  - Требование: бот и сайт должны иметь один и тот же `TELEGRAM_TOKEN`, иначе подпись не совпадёт и вход покажет «Неверная подпись». Бот перезапустить после правки.
+  - Проверка: `pytest` → `78 passed` (с временной SQLite через `TEST_DATABASE_URL`, `SESSION_SECRET` и `TELEGRAM_TOKEN` из окружения; `pytest-asyncio` подключён `uv run --with`). Новые тесты: `tests/test_bot_login.py` (подпись, срок, подделка, маршрут, страница, ответ бота). В `tests/test_web.py` поиск кнопки входа обновлён на класс `tg-login`.
+  - Не проверено: живой вход через бота в Telegram и на Vercel; cookie в браузере Telegram (ссылка может открыться во встроенном браузере, а cookie окажется там, а не в обычном браузере); сценарий повторного нажатия ссылки в течение 5 минут.
+  - Не сделано: `unslop-reviewer` не запускался (в этой сессии такого агента нет), вид страницы `/login` глазами не смотрел; `pyproject.toml` не содержит `pytest-asyncio`, хотя он есть в `requirements.txt` и нужен `conftest.py`. Не закоммичено, на Vercel не задеплоено.
 
 ## Дизайн-навыки и библиотеки (с 13.11.2026)
 Источник токенов: `design-system/fridgekeeper/MASTER.md`. Он опирается на текущие решения (Fraunces, Inter, терракота) и не заменяет их. Если страница требует отдельных правил, класть в `design-system/fridgekeeper/pages/<имя>.md`.

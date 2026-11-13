@@ -24,11 +24,16 @@ from core.label_service import analyze_label
 from core.linking import LinkStatus, consume_link_token
 from core.notifications import TZ
 from core.ocr import OcrError
+from core.telegram_auth import build_bot_login_url
 from core.products import find_products_by_name, list_user_products, products_expiring_within
 from core.users import get_or_create_user
 from models import Product
 
 router = Router()
+
+# Вход на сайт через бота: /start login
+LOGIN_PROMPT_TEXT = "Нажмите кнопку, чтобы войти на сайт FridgeKeeper. Ссылка действует 5 минут."
+LOGIN_BUTTON_TEXT = "Войти на сайт"
 
 
 class AddFromPhoto(StatesGroup):
@@ -59,6 +64,14 @@ async def cmd_start(message: Message, command: CommandObject) -> None:
     telegram_id = message.from_user.id
 
     async with SessionFactory() as session:
+        # Вход на сайт: бот подписывает ссылку для этого пользователя (см. core/telegram_auth.py)
+        if command.args and command.args.strip() == "login":
+            keyboard = InlineKeyboardMarkup(
+                inline_keyboard=[[InlineKeyboardButton(text=LOGIN_BUTTON_TEXT, url=build_bot_login_url(telegram_id))]]
+            )
+            await message.answer(LOGIN_PROMPT_TEXT, reply_markup=keyboard)
+            return
+
         # Сначала связывание: иначе запись, созданная get_or_create_user, сама займёт telegram_id
         if command.args:
             status = await consume_link_token(session, command.args.strip(), telegram_id)

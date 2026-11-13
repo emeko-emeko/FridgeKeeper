@@ -269,7 +269,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "login_title": "Вход",
         "login_hint": "Нажмите кнопку ниже, чтобы войти",
         "login_button": "Войти через Telegram",
-        "login_back": "На главную"
+        "login_back": "На главную",
+        "login_bot_button": "Войти через бота",
+        "login_bot_hint": "Откроется Telegram. Нажмите Start в боте, затем «Войти на сайт».",
+        "login_bot_error": "Ссылка входа устарела или неверна. Откройте бота и попробуйте ещё раз.",
+        "login_legacy_hint": "Старый вход через виджет Telegram, на случай если вход через бота не работает:"
     },
     "en": {
         "html_lang": "en",
@@ -526,7 +530,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "login_title": "Sign in",
         "login_hint": "Press the button below to sign in",
         "login_button": "Sign in with Telegram",
-        "login_back": "Back to home"
+        "login_back": "Back to home",
+        "login_bot_button": "Sign in via the bot",
+        "login_bot_hint": "Telegram opens. Press Start in the bot, then “Sign in to the site”.",
+        "login_bot_error": "The sign-in link has expired or is invalid. Open the bot and try again.",
+        "login_legacy_hint": "Old sign-in via the Telegram widget, in case the bot sign-in fails:"
     },
 }
 
