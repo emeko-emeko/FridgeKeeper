@@ -22,6 +22,13 @@
   var photoInputs = [$("photo-camera"), $("photo-file")];
   var photoButtons = [$("photo-camera-btn"), $("photo-file-btn")];
   var suggested = { name: "", expiry: null };
+  var summary = $("summary"), DEFAULT_TITLE = summary.textContent;
+  var headAdd = $("head-add");
+  headAdd.addEventListener("click", function () {
+    $("add-name").scrollIntoView({ block: "center" });
+    $("add-name").focus();
+  });
+  $("empty-photo").addEventListener("click", function () { photoInputs[0].click(); });
 
   // Подписи полей берём из разметки, чтобы не дублировать тексты.
   var LABEL_NAME = $("add-name").parentNode.firstElementChild.textContent;
@@ -124,9 +131,9 @@
 
     var body = el("div", "app-item__main");
     body.appendChild(el("p", "app-item__name", p.name));
-    var meta = d.text + (p.expiry_date ? " · " + tr("until", { date: formatDate(p.expiry_date) }) : "");
-    body.appendChild(el("p", "app-item__meta", meta));
+    if (p.expiry_date) body.appendChild(el("p", "app-item__meta", tr("until", { date: formatDate(p.expiry_date) })));
     li.appendChild(body);
+    li.appendChild(el("span", "app-pill app-pill--" + d.level, d.text));
 
     var buttons = el("div", "app-item__buttons");
     buttons.appendChild(button(tr("edit"), "app-link", function () { startEdit(li, p); }));
@@ -191,8 +198,31 @@
     try { items = await r.json(); } catch (e) { say(tr("network"), true); return; }
     items.sort(function (a, b) { return sortKey(a) - sortKey(b); });
     list.textContent = "";
-    items.forEach(function (p) { list.appendChild(renderItem(p)); });
-    empty.textContent = items.length ? "" : tr("empty");
+    var order = ["expired", "urgent", "soon", "ok", "none"];
+    var names = { expired: "g_expired", urgent: "g_today", soon: "g_soon", ok: "g_later", none: "g_none" };
+    var groups = {};
+    order.forEach(function (k) { groups[k] = []; });
+    items.forEach(function (p) { groups[describe(p.expiry_date).level].push(p); });
+    order.forEach(function (k) {
+      if (!groups[k].length) return;
+      var sec = el("section", "app-group app-group--" + k);
+      var h = el("h3", "app-group__title", tr(names[k]));
+      h.appendChild(el("span", "app-group__count", String(groups[k].length)));
+      sec.appendChild(h);
+      var ul = el("ul", "app-list");
+      groups[k].forEach(function (p) { ul.appendChild(renderItem(p)); });
+      sec.appendChild(ul);
+      list.appendChild(sec);
+    });
+    empty.hidden = items.length > 0;
+    summary.textContent = summaryText(groups, items.length);
+  }
+
+  function summaryText(g, total) {
+    var soon = g.urgent.length + g.soon.length;
+    if (soon) return tr("sum_soon", { n: soon });
+    if (g.expired.length) return tr("sum_expired", { n: g.expired.length });
+    return total ? tr("sum_ok") : DEFAULT_TITLE;
   }
 
   // Добавление вручную
@@ -227,15 +257,34 @@
   photoButtons[0].addEventListener("click", function () { photoInputs[0].click(); });
   photoButtons[1].addEventListener("click", function () { photoInputs[1].click(); });
 
+  // Уменьшаем фото в браузере: Vercel не принимает тела больше ~4,5 МБ (413).
+  // Если браузер не смог прочитать файл, отправляем оригинал.
+  async function shrinkPhoto(file) {
+    try {
+      var bmp = await createImageBitmap(file);
+      var scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      var canvas = document.createElement("canvas");
+      canvas.width = Math.round(bmp.width * scale);
+      canvas.height = Math.round(bmp.height * scale);
+      canvas.getContext("2d").drawImage(bmp, 0, 0, canvas.width, canvas.height);
+      var blob = await new Promise(function (resolve) { canvas.toBlob(resolve, "image/jpeg", 0.8); });
+      return blob || file;
+    } catch (e) {
+      return file;
+    }
+  }
+
   function handlePhoto(input) {
     var file = input.files && input.files[0];
     if (!file) return;
     resetReview();
     say(tr("scanning"));
-    var form = new FormData();
-    form.append("file", file);
     locked(photoButtons, async function () {
+      var blob = await shrinkPhoto(file);
+      var form = new FormData();
+      form.append("file", blob, "label.jpg");
       var r = await api("/products/scan", { method: "POST", body: form });
+      if (r.status === 413) { say(tr("too_big"), true); return; }
       if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
       var data = await r.json();
       suggested = { name: data.product_name || "", expiry: data.expiry_date };
@@ -300,12 +349,14 @@
     gate.hidden = true;
     document.getElementById("head-bot").hidden = false;
     main.hidden = false;
+    headAdd.hidden = false;
     say(tr("loading"));
     return load().then(function () { if (notice.textContent === tr("loading")) say(""); });
   }
 
   function showGate() {
     main.hidden = true;
+    headAdd.hidden = true;
     document.getElementById("head-bot").hidden = true;
     gate.hidden = false;
     say("");

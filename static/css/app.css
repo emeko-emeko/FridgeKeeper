@@ -18,7 +18,6 @@
   font-size: clamp(28px, 4vw, 40px);
   line-height: 1.15;
 }
-.app__lead { margin: var(--s1) 0 0; color: var(--ink-2); line-height: 1.6; }
 .app__head-text { min-width: 0; }
 .app__head-actions { display: flex; flex-wrap: wrap; gap: var(--s1); }
 
@@ -74,7 +73,6 @@
 .app-actions { display: flex; flex-wrap: wrap; gap: var(--s1); margin-top: var(--s2); }
 
 .app-empty { margin: 0; padding: var(--s3); color: var(--ink-2); background: var(--surface); border: 1px dashed var(--line-strong); border-radius: var(--r-md); }
-.app-empty:empty { display: none; }
 
 .app-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s1); }
 .app-item {
@@ -87,25 +85,53 @@
   border-radius: var(--r-md);
   padding: var(--s2) var(--s3);
 }
-/* Состояние показывает точка и текст срока, а не цветная полоса карточки. */
-.app-item::before {
-  content: "";
+/* Статус: плашка с цветной точкой и текстом срока. */
+.app-pill {
   flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ink-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  height: 28px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
-.app-item--expired::before { background: var(--accent); }
-.app-item--urgent::before { background: var(--orange); }
-.app-item--soon::before { background: var(--yellow); }
-.app-item--ok::before { background: var(--green); }
-.app-item:has(.app-item__edit)::before { display: none; }
+.app-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.app-pill--expired::before { background: var(--accent); }
+.app-pill--urgent::before { background: var(--orange); }
+.app-pill--soon::before { background: var(--yellow); }
+.app-pill--ok::before { background: var(--green); }
+.app-item:has(.app-item__edit) .app-pill { display: none; }
+
+/* Просроченное приглушено, чтобы не спорить со срочным. */
+.app-item--expired .app-item__name { color: var(--ink-2); }
+.app-item--expired .app-pill { color: var(--ink-2); border-color: var(--line); }
+
+.app-groups { display: grid; gap: var(--s4); }
+.app-group__title {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+  margin: 0 0 var(--s1);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.app-group__count { font-size: 14px; font-weight: 400; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.app-lead { margin: 0 0 var(--s3); }
+.app-empty[hidden] { display: none; }
+.app-empty__title { margin: 0; font-weight: 500; color: var(--ink); }
+.app-empty__text { margin: 4px 0 0; }
 
 .app-item__main { flex: 1 1 200px; min-width: 0; }
 .app-item__name { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
 .app-item__meta { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.app-item--expired .app-item__meta { color: var(--ink-2); }
 
 .app-item__buttons { display: flex; gap: var(--s1); }
 .app-link {
@@ -117,7 +143,7 @@
   color: var(--ink);
   background: transparent;
   border: 1px solid var(--line-strong);
-  border-radius: var(--r-sm);
+  border-radius: 12px;
   cursor: pointer;
 }
 .app-link { transition: border-color 160ms var(--ease), color 160ms var(--ease); }
@@ -133,6 +159,7 @@
   .app { padding-top: var(--s4); }
   .app__head-actions { width: 100%; }
   .app__head-actions .btn { flex: 1; }
+  .app-empty .btn { width: 100%; }
   .app-card { padding: var(--s2); }
   .app-gate { padding: var(--s3) var(--s2); }
   .app-form .btn, .app-actions .btn { width: 100%; }

@@ -193,14 +193,34 @@
       scanStatus.textContent = "Распознаём…";
       snap.disabled = true;
 
-      const form = new FormData();
-      form.append("file", file);
+      // Уменьшаем фото в браузере: Vercel не принимает тела больше ~4,5 МБ (413).
+      async function shrink(f) {
+        try {
+          const bmp = await createImageBitmap(f);
+          const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(bmp.width * scale);
+          canvas.height = Math.round(bmp.height * scale);
+          canvas.getContext("2d").drawImage(bmp, 0, 0, canvas.width, canvas.height);
+          const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.8));
+          return blob || f;
+        } catch (e) {
+          return f;
+        }
+      }
+
       try {
+        const form = new FormData();
+        form.append("file", await shrink(file), "label.jpg");
         const r = await fetch("/products/scan", {
           method: "POST",
           headers: authHeaders(),
           body: form,
         });
+        if (r.status === 413) {
+          scanStatus.textContent = "Фото слишком большое, попробуйте ещё раз.";
+          return;
+        }
         if (!r.ok) {
           scanStatus.textContent = "Не удалось распознать: " + r.status;
           return;

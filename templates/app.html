@@ -7,10 +7,10 @@
   <div class="container app__inner">
     <header class="app__head">
       <div class="app__head-text">
-        <h1 class="app__title">{{ t.app_title }}</h1>
-        <p class="app__lead">{{ t.app_lead }}</p>
+        <h1 class="app__title" id="summary">{{ t.app_title }}</h1>
       </div>
       <div class="app__head-actions">
+        <button class="btn btn--ghost btn--small" id="head-add" type="button" hidden>{{ t.app_add }}</button>
         <a class="btn btn--ghost btn--small" id="head-bot" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.app_bot }}</a>
         <button class="btn btn--ghost btn--small" id="logout" type="button">{{ t.app_logout }}</button>
       </div>
@@ -75,8 +75,16 @@
 
       <section aria-labelledby="list-title">
         <h2 id="list-title" class="app-card__title app-list-title">{{ t.app_list_title }}</h2>
-        <p id="empty" class="app-empty"></p>
-        <ul id="list" class="app-list"></ul>
+        <p class="app-hint app-lead">{{ t.app_lead }}</p>
+        <div id="empty" class="app-empty" hidden>
+          <p class="app-empty__title">{{ t.app_empty_title }}</p>
+          <p class="app-empty__text">{{ t.app_empty_text }}</p>
+          <div class="app-actions">
+            <button class="btn btn--ghost" id="empty-photo" type="button">{{ t.app_photo_camera }}</button>
+            <a class="btn btn--ghost" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.app_bot }}</a>
+          </div>
+        </div>
+        <div id="list" class="app-groups"></div>
       </section>
     </div>
   </div>
