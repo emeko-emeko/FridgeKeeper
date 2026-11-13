@@ -7,15 +7,14 @@ import json
 import time
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.bot_login import check_login_code, create_login_code
+from core.bot_login import verify_bot_code
 from core.config import SESSION_SECRET
 from core.database import SessionFactory
-from core.i18n import TELEGRAM_BOT_URL
 from core.telegram_auth import TelegramAuthError, verify_login_widget, verify_mini_app
 from core.users import get_or_create_user
 from models import LinkToken, User  # noqa: F401 — модели регистрируются через models
@@ -165,25 +164,22 @@ async def me(
     return {"user_id": user_id, "bot_started": user is not None and user.bot_started_at is not None}
 
 
-@router.post("/bot-login/start")
-async def bot_login_start(session: AsyncSession = Depends(get_session)):
-    """Создаёт одноразовый код и ссылку на бота. Код живёт 5 минут."""
-    code = await create_login_code(session)
-    return {"code": code, "bot_url": f"{TELEGRAM_BOT_URL}?start=login_{code}"}
+class BotLoginVerify(BaseModel):
+    code: str = ""
 
 
-@router.get("/bot-login/status")
-async def bot_login_status(
-    response: Response,
-    code: str = Query("", max_length=128),
-    session: AsyncSession = Depends(get_session),
-):
-    """Опрос со страницы входа: pending, ok (ставит cookie) или expired."""
-    status, user_id = await check_login_code(session, code)
-    if status != "ok" or user_id is None:
-        return {"status": status}
+@router.post("/bot-login/verify")
+async def bot_login_verify(body: BotLoginVerify, session: AsyncSession = Depends(get_session)):
+    """Код из бота, введённый на сайте. При успехе ставит cookie сессии.
+
+    Все причины отказа (неверный, истёкший, использованный, пустой код) дают один и тот же ответ 400.
+    """
+    user_id = await verify_bot_code(session, body.code)
+    if user_id is None:
+        raise HTTPException(status_code=400, detail="Код не подошёл или истёк")
     token = make_session_token(user_id, bot_started=True)
+    response = JSONResponse({"ok": True})
     response.set_cookie(
         SESSION_COOKIE, token, httponly=True, secure=True, samesite="lax", max_age=SESSION_TTL_SECONDS
     )
-    return {"status": "ok"}
+    return response

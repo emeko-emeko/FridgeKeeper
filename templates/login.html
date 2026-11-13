@@ -9,18 +9,25 @@
       <rect x="22.5" y="16" width="2.4" height="6" rx="1.2" fill="currentColor"/>
     </svg>
     <h1>{{ t.login_title }}</h1>
-    <p>{{ t.login_hint }}</p>
 
-    <button class="btn btn--primary login__bot" id="bot-login" type="button">
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9.8 15.2l-.4 4.2c.6 0 .8-.3 1.1-.6l2.6-2.5 5.4 3.9c1 .5 1.7.3 1.9-.9l3.5-16.4c.3-1.5-.5-2.1-1.5-1.7L1.6 9.6c-1.4.6-1.4 1.4-.3 1.7l5.4 1.7L19.7 5c.6-.4 1.2-.2.7.2z"/></svg>
-      <span>{{ t.login_bot_button }}</span>
-    </button>
+    <section class="login__step" aria-labelledby="login-step1">
+      <h2 class="login__step-title" id="login-step1"><span class="login__num">1</span>{{ t.login_step1 }}</h2>
+      <a class="btn btn--primary login__bot" href="{{ bot_url }}?start=login" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9.8 15.2l-.4 4.2c.6 0 .8-.3 1.1-.6l2.6-2.5 5.4 3.9c1 .5 1.7.3 1.9-.9l3.5-16.4c.3-1.5-.5-2.1-1.5-1.7L1.6 9.6c-1.4.6-1.4 1.4-.3 1.7l5.4 1.7L19.7 5c.6-.4 1.2-.2.7.2z"/></svg>
+        <span>{{ t.login_bot_open }}</span>
+      </a>
+    </section>
 
-    <div id="bot-wait" class="login__wait" hidden>
-      <p class="login__wait-text">{{ t.login_bot_wait }}</p>
-      <a id="bot-open" class="btn btn--ghost btn--small" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.app_bot }}</a>
-    </div>
-    <p id="login-msg" class="login__msg" role="status" aria-live="polite" hidden></p>
+    <form class="login__step login__form" id="code-form" novalidate aria-labelledby="login-step2">
+      <h2 class="login__step-title" id="login-step2"><span class="login__num">2</span>{{ t.login_step2 }}</h2>
+      <label class="login__label" for="code-input">{{ t.login_code_label }}</label>
+      <input class="login__input" id="code-input" name="code" type="text" inputmode="text"
+             autocomplete="one-time-code" autocapitalize="characters" autocorrect="off" spellcheck="false"
+             maxlength="9" placeholder="XXXX-XXXX" aria-describedby="login-note login-msg">
+      <p id="login-msg" class="login__msg" role="alert" hidden></p>
+      <button class="btn btn--primary login__submit" id="code-submit" type="submit">{{ t.login_submit }}</button>
+      <p id="login-note" class="login__note">{{ t.login_code_note }}</p>
+    </form>
 
     <div class="login__alt">
       <span class="login__alt-label">{{ t.login_other }}</span>

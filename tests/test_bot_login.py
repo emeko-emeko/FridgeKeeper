@@ -1,7 +1,8 @@
 """Тесты входа на сайт через бота.
 
-Поток: сайт создаёт код → /start login_<код> только показывает запрос с кнопками →
-кнопка «Подтвердить» привязывает код к нажавшему, «Отмена» гасит код → сайт опрашивает статус.
+Поток: пользователь пишет боту /login (или /start login) → бот выдаёт код XXXX-XXXX этому пользователю →
+пользователь вводит код на сайте → POST /auth/bot-login/verify ставит cookie.
+Сайт код не создаёт, ссылок с кодом нет.
 """
 
 import base64
@@ -10,7 +11,6 @@ import hmac
 import json
 import re
 import time
-from datetime import datetime
 from types import SimpleNamespace
 from urllib.parse import urlencode
 
@@ -20,28 +20,26 @@ from aiogram.filters import CommandObject
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+import core.telegram_auth as tg_auth
 from api.auth import SESSION_COOKIE, SESSION_SECRET, get_session, make_session_token, read_session
 from app import app
 from bot import handlers
-from bot.formatting import LINK_MESSAGES, LOGIN_CALLBACK_MESSAGES, LOGIN_MESSAGES, login_confirm_text
+from bot.formatting import BOT_COMMANDS, HELP_TEXT, LINK_MESSAGES
 from core.bot_login import (
-    LOGIN_CODE_LENGTH,
+    CODE_ALPHABET,
+    CODE_LENGTH,
     LOGIN_CODE_TTL_SECONDS,
-    ConfirmStatus,
-    cancel_login_by_id,
-    check_login_code,
-    confirm_login_by_id,
-    create_login_code,
-    inspect_login_code,
-    is_login_code,
-    login_nonce,
+    create_bot_login_code,
+    generate_code,
 )
-import core.telegram_auth as tg_auth
 from core.database import init_db, make_session_factory
-from core.i18n import TELEGRAM_BOT_URL
 from core.telegram_auth import _check_string
 from core.users import get_or_create_user, mark_bot_started
 from models import LoginCode, User
+
+CODE_IN_TEXT = re.compile(r"<code>([A-Z0-9]{4}-[A-Z0-9]{4})</code>")
+CODE_FORMAT = re.compile(r"[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}")
+VERIFY_ERROR = "Код не подошёл или истёк"
 
 
 @pytest_asyncio.fixture
@@ -60,64 +58,35 @@ async def factory(tmp_path):
     await engine.dispose()
 
 
-def _fake_message(telegram_id: int, replies: list, markups: list):
+def _fake_message(telegram_id: int, replies: list):
     async def answer(text, **kwargs):
         replies.append(text)
-        markups.append(kwargs.get("reply_markup"))
 
     return SimpleNamespace(from_user=SimpleNamespace(id=telegram_id, first_name="Тест"), answer=answer)
 
 
-async def _send_start(monkeypatch, factory, telegram_id: int, args: str):
-    """Имитирует /start <args>. Возвращает (тексты ответов, клавиатуры ответов)."""
+async def _login_command(monkeypatch, factory, telegram_id: int) -> str:
+    """Вызывает /login и возвращает код из ответа бота (XXXX-XXXX)."""
     monkeypatch.setattr(handlers, "SessionFactory", factory)
     replies: list[str] = []
-    markups: list = []
-    message = _fake_message(telegram_id, replies, markups)
+    await handlers.cmd_login(_fake_message(telegram_id, replies))
+    assert len(replies) == 1
+    match = CODE_IN_TEXT.search(replies[0])
+    assert match, replies[0]
+    return match.group(1)
+
+
+async def _send_start(monkeypatch, factory, telegram_id: int, args: str) -> list[str]:
+    """Имитирует /start <args>. Возвращает тексты ответов."""
+    monkeypatch.setattr(handlers, "SessionFactory", factory)
+    replies: list[str] = []
+    message = _fake_message(telegram_id, replies)
     await handlers.cmd_start(message, CommandObject(prefix="/", command="start", args=args))
-    return replies, markups
-
-
-async def _press(monkeypatch, factory, telegram_id: int, data: str) -> list[str]:
-    """Имитирует нажатие inline-кнопки. Возвращает тексты ответов бота."""
-    monkeypatch.setattr(handlers, "SessionFactory", factory)
-    replies: list[str] = []
-    markups: list = []
-
-    async def noop(*args, **kwargs):
-        return None
-
-    message = SimpleNamespace(
-        answer=_fake_message(telegram_id, replies, markups).answer,
-        edit_reply_markup=noop,
-    )
-    callback = SimpleNamespace(
-        from_user=SimpleNamespace(id=telegram_id),
-        data=data,
-        message=message,
-        answer=noop,
-    )
-    await handlers.on_login_callback(callback)
     return replies
 
 
-def _button_ids(markups: list) -> tuple[str, str]:
-    """callback_data кнопок «Подтвердить» и «Отмена» из клавиатуры запроса."""
-    keyboard = markups[0].inline_keyboard[0]
-    return keyboard[0].callback_data, keyboard[1].callback_data
-
-
-async def _start_via_bot(monkeypatch, factory, telegram_id: int, code: str):
-    """/start login_<code> и возвращает (confirm_data, cancel_data) из ответа бота."""
-    replies, markups = await _send_start(monkeypatch, factory, telegram_id, f"login_{code}")
-    assert replies and "Подтвердить вход" in replies[0]
-    return _button_ids(markups)
-
-
-def _start_code(client: TestClient) -> str:
-    response = client.post("/auth/bot-login/start")
-    assert response.status_code == 200
-    return response.json()["code"]
+def _verify(client: TestClient, code: str):
+    return client.post("/auth/bot-login/verify", json={"code": code})
 
 
 def _cookie_value(set_cookie: str) -> str:
@@ -127,261 +96,12 @@ def _cookie_value(set_cookie: str) -> str:
     return match.group(1).strip('"')
 
 
-async def _stored_row(factory, raw_code: str) -> LoginCode:
-    async with factory() as s:
-        _, row = await inspect_login_code(s, raw_code)
-        assert row is not None
-        return row
+def _cookie_headers(token: str) -> dict[str, str]:
+    return {"cookie": f"{SESSION_COOKIE}={token}"}
 
 
-def test_start_returns_code_and_bot_link(factory):
-    data = TestClient(app).post("/auth/bot-login/start").json()
-    code = data["code"]
-
-    assert len(code) == LOGIN_CODE_LENGTH
-    assert data["bot_url"] == f"{TELEGRAM_BOT_URL}?start=login_{code}"
-    assert len(f"login_{code}") <= 64  # лимит параметра /start в Telegram
-
-
-def test_status_is_pending_before_bot_confirms(factory):
-    client = TestClient(app)
-    code = _start_code(client)
-
-    response = client.get("/auth/bot-login/status", params={"code": code})
-    assert response.json() == {"status": "pending"}
-    assert "set-cookie" not in response.headers
-
-
-@pytest.mark.asyncio
-async def test_start_with_login_code_does_not_bind(factory, monkeypatch):
-    """Главное: /start login_<код> не привязывает код, сайт по-прежнему видит pending."""
-    client = TestClient(app)
-    code = _start_code(client)
-
-    replies, markups = await _send_start(monkeypatch, factory, 4241, f"login_{code}")
-    assert len(replies) == 1
-    assert "Подтвердить вход" in replies[0]
-    assert "Отмена" in markups[0].inline_keyboard[0][1].text
-
-    response = client.get("/auth/bot-login/status", params={"code": code})
-    assert response.json() == {"status": "pending"}
-    assert "set-cookie" not in response.headers
-    row = await _stored_row(factory, code)
-    assert row.confirmed_user_id is None
-    assert row.used_at is None
-
-
-@pytest.mark.asyncio
-async def test_confirm_button_binds_and_site_gets_ok(factory, monkeypatch):
-    client = TestClient(app)
-    code = _start_code(client)
-    confirm_data, _ = await _start_via_bot(monkeypatch, factory, 4242, code)
-
-    replies = await _press(monkeypatch, factory, 4242, confirm_data)
-    assert replies == [LOGIN_MESSAGES["ok"]]
-
-    response = client.get("/auth/bot-login/status", params={"code": code})
-    assert response.json() == {"status": "ok"}
-    set_cookie = response.headers["set-cookie"]
-    assert "httponly" in set_cookie.lower()
-    assert "secure" in set_cookie.lower()
-    assert "samesite=lax" in set_cookie.lower()
-
-    user_id, bot_started = read_session(_cookie_value(set_cookie))
-    assert bot_started is True
-    async with factory() as s:
-        user = await get_or_create_user(s, 4242)
-        assert user_id == user.id
-
-
-@pytest.mark.asyncio
-async def test_cancel_button_gives_expired_for_site(factory, monkeypatch):
-    client = TestClient(app)
-    code = _start_code(client)
-    _, cancel_data = await _start_via_bot(monkeypatch, factory, 4250, code)
-
-    replies = await _press(monkeypatch, factory, 4250, cancel_data)
-    assert replies == [LOGIN_CALLBACK_MESSAGES["cancelled"]]
-
-    response = client.get("/auth/bot-login/status", params={"code": code})
-    assert response.json() == {"status": "expired"}
-    assert "set-cookie" not in response.headers
-
-
-@pytest.mark.asyncio
-async def test_repeat_confirm_is_safe_and_does_not_rebind(factory, monkeypatch):
-    client = TestClient(app)
-    code = _start_code(client)
-    confirm_data, _ = await _start_via_bot(monkeypatch, factory, 4260, code)
-
-    assert await _press(monkeypatch, factory, 4260, confirm_data) == [LOGIN_MESSAGES["ok"]]
-    # Повтор тем же пользователем и нажатие другим аккаунтом: ничего не меняется
-    assert await _press(monkeypatch, factory, 4260, confirm_data) == [LOGIN_MESSAGES["used"]]
-    assert await _press(monkeypatch, factory, 4261, confirm_data) == [LOGIN_MESSAGES["used"]]
-
-    first = client.get("/auth/bot-login/status", params={"code": code})
-    assert first.json() == {"status": "ok"}
-    assert client.get("/auth/bot-login/status", params={"code": code}).json() == {"status": "expired"}
-    row = await _stored_row(factory, code)
-    async with factory() as s:
-        owner = await get_or_create_user(s, 4260)
-    assert row.confirmed_user_id == owner.id
-
-
-@pytest.mark.asyncio
-async def test_confirm_after_cancel_is_used_and_site_stays_expired(factory, monkeypatch):
-    client = TestClient(app)
-    code = _start_code(client)
-    confirm_data, cancel_data = await _start_via_bot(monkeypatch, factory, 4270, code)
-
-    assert await _press(monkeypatch, factory, 4270, cancel_data) == [LOGIN_CALLBACK_MESSAGES["cancelled"]]
-    assert await _press(monkeypatch, factory, 4270, confirm_data) == [LOGIN_MESSAGES["used"]]
-    assert await _press(monkeypatch, factory, 4270, cancel_data) == [LOGIN_MESSAGES["used"]]
-
-    response = client.get("/auth/bot-login/status", params={"code": code})
-    assert response.json() == {"status": "expired"}
-    assert "set-cookie" not in response.headers
-
-
-@pytest.mark.asyncio
-async def test_unknown_or_foreign_id_is_safe(factory, monkeypatch):
-    """Несуществующий id, битые callback и старые кнопки без нонса не падают и ничего не меняют."""
-    fake_nonce = "0" * 16
-    assert await _press(monkeypatch, factory, 4280, f"login:ok:999999:{fake_nonce}") == [LOGIN_MESSAGES["invalid"]]
-    assert await _press(monkeypatch, factory, 4280, f"login:no:999999:{fake_nonce}") == [LOGIN_MESSAGES["invalid"]]
-    assert await _press(monkeypatch, factory, 4280, "login:ok:abc:" + fake_nonce) == []
-    assert await _press(monkeypatch, factory, 4280, "login:drop:1:" + fake_nonce) == []
-    assert await _press(monkeypatch, factory, 4280, "login:ok") == []
-    assert await _press(monkeypatch, factory, 4280, "login:ok:1") == []  # старая форма без нонса
-
-
-@pytest.mark.asyncio
-async def test_expired_code_start_and_buttons(factory, monkeypatch):
-    async with factory() as s:
-        raw = await create_login_code(s, ttl_seconds=-1)
-        _, row = await inspect_login_code(s, raw)
-        login_id, nonce = row.id, login_nonce(row)
-
-    assert await _send_start(monkeypatch, factory, 4290, f"login_{raw}") == (
-        [LOGIN_MESSAGES["expired"]],
-        [None],
-    )
-    assert await _press(monkeypatch, factory, 4290, f"login:ok:{login_id}:{nonce}") == [LOGIN_MESSAGES["expired"]]
-    assert await _press(monkeypatch, factory, 4290, f"login:no:{login_id}:{nonce}") == [LOGIN_MESSAGES["expired"]]
-
-
-@pytest.mark.asyncio
-async def test_unknown_code_is_expired_for_site_and_invalid_for_bot(factory, monkeypatch):
-    client = TestClient(app)
-    fake = "x" * LOGIN_CODE_LENGTH
-
-    response = client.get("/auth/bot-login/status", params={"code": fake})
-    assert response.json() == {"status": "expired"}
-    assert "set-cookie" not in response.headers
-
-    replies, _ = await _send_start(monkeypatch, factory, 4245, f"login_{fake}")
-    assert replies == [LOGIN_MESSAGES["invalid"]]
-
-
-@pytest.mark.asyncio
-async def test_short_login_prefix_goes_to_link_branch(factory, monkeypatch):
-    """Аргумент с префиксом login_, но не 43 символа, — это обычный link-токен."""
-    assert not is_login_code("short")
-    replies, _ = await _send_start(monkeypatch, factory, 4246, "login_short")
-    assert replies == [LINK_MESSAGES["invalid"]]
-
-
-def test_is_login_code_checks_length():
-    assert is_login_code("a" * 43)
-    assert not is_login_code("a" * 42)
-    assert not is_login_code("a" * 44)
-    assert not is_login_code("")
-
-
-def test_status_without_code_is_expired(factory):
-    response = TestClient(app).get("/auth/bot-login/status")
-    assert response.json() == {"status": "expired"}
-
-
-def test_ttl_is_five_minutes():
-    assert LOGIN_CODE_TTL_SECONDS == 300
-
-
-def test_confirm_text_shows_time_in_almaty():
-    # 00:00 UTC = 05:00 по Астане (UTC+5)
-    text = login_confirm_text(datetime(2026, 11, 13, 0, 0))
-    assert "13.11.2026 05:00" in text
-    assert "Отмена" in text
-
-
-@pytest.mark.asyncio
-async def test_create_stores_created_at(session):
-    raw = await create_login_code(session)
-    _, row = await inspect_login_code(session, raw)
-    assert row.created_at is not None
-    assert row.expires_at > row.created_at
-
-
-@pytest.mark.asyncio
-async def test_expired_code_is_rejected_by_site_and_bot(session):
-    raw = await create_login_code(session, ttl_seconds=-1)
-    _, row = await inspect_login_code(session, raw)
-
-    assert await check_login_code(session, raw) == ("expired", None)
-    nonce = login_nonce(row)
-    assert await confirm_login_by_id(session, row.id, telegram_id=5001, nonce=nonce) is ConfirmStatus.EXPIRED
-    assert await cancel_login_by_id(session, row.id, nonce=nonce) is ConfirmStatus.EXPIRED
-
-
-@pytest.mark.asyncio
-async def test_core_inspect_does_not_bind(session):
-    raw = await create_login_code(session)
-    status, row = await inspect_login_code(session, raw)
-    assert status is ConfirmStatus.PENDING
-    assert await check_login_code(session, raw) == ("pending", None)
-    # Повторный осмотр не меняет состояние
-    status_again, _ = await inspect_login_code(session, raw)
-    assert status_again is ConfirmStatus.PENDING
-
-
-@pytest.mark.asyncio
-async def test_core_confirm_then_check_returns_user_once(session):
-    user = await get_or_create_user(session, 5002)
-    raw = await create_login_code(session)
-    _, row = await inspect_login_code(session, raw)
-
-    assert await check_login_code(session, raw) == ("pending", None)
-    assert await confirm_login_by_id(session, row.id, telegram_id=5002, nonce=login_nonce(row)) is ConfirmStatus.OK
-    assert await check_login_code(session, raw) == ("ok", user.id)
-    assert await check_login_code(session, raw) == ("expired", None)
-
-
-@pytest.mark.asyncio
-async def test_confirm_twice_is_used(session):
-    raw = await create_login_code(session)
-    _, row = await inspect_login_code(session, raw)
-    nonce = login_nonce(row)
-    assert await confirm_login_by_id(session, row.id, telegram_id=5003, nonce=nonce) is ConfirmStatus.OK
-    assert await confirm_login_by_id(session, row.id, telegram_id=5004, nonce=nonce) is ConfirmStatus.USED
-
-
-@pytest.mark.asyncio
-async def test_cancel_then_check_is_expired(session):
-    raw = await create_login_code(session)
-    _, row = await inspect_login_code(session, raw)
-    nonce = login_nonce(row)
-    assert await cancel_login_by_id(session, row.id, nonce=nonce) is ConfirmStatus.CANCELLED
-    assert await check_login_code(session, raw) == ("expired", None)
-    assert await confirm_login_by_id(session, row.id, telegram_id=5005, nonce=nonce) is ConfirmStatus.USED
-
-
-@pytest.mark.asyncio
-async def test_code_is_stored_only_as_hash(session):
-    raw = await create_login_code(session)
-    stored = (await session.scalars(select(LoginCode))).all()
-    assert len(stored) == 1
-    assert stored[0].code_hash != raw
-    assert stored[0].code_hash == hashlib.sha256(raw.encode()).hexdigest()
+def _bearer_headers(token: str) -> dict[str, str]:
+    return {"authorization": f"Bearer {token}"}
 
 
 async def _user_id(factory, telegram_id: int) -> int:
@@ -395,42 +115,197 @@ async def _bot_started_at(factory, user_id: int):
         return user.bot_started_at
 
 
-def _cookie_headers(token: str) -> dict[str, str]:
-    return {"cookie": f"{SESSION_COOKIE}={token}"}
-
-
-def _bearer_headers(token: str) -> dict[str, str]:
-    return {"authorization": f"Bearer {token}"}
-
-
-def test_me_ignores_bs_claim_in_token(factory):
-    """Claim bs в токене больше не влияет на /auth/me: решает только БД. Пользователя 7 в БД нет."""
-    token = make_session_token(7, bot_started=True)
-    response = TestClient(app).get("/auth/me", headers=_cookie_headers(token))
-    assert response.status_code == 200
-    assert response.json() == {"user_id": 7, "bot_started": False}
+# --- Выдача кода в боте ---------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_me_with_widget_token_reports_bot_started_false(factory):
-    uid = await _user_id(factory, 4310)
-    token = make_session_token(uid)
-    response = TestClient(app).get("/auth/me", headers=_cookie_headers(token))
-    assert response.json() == {"user_id": uid, "bot_started": False}
+async def test_login_command_issues_code_in_format(factory, monkeypatch):
+    code = await _login_command(monkeypatch, factory, 4500)
+    assert CODE_FORMAT.fullmatch(code), code
 
 
 @pytest.mark.asyncio
-async def test_me_with_bearer_token_reports_db_value(factory, monkeypatch):
-    uid = await _user_id(factory, 4311)
-    token = make_session_token(uid)
+async def test_db_stores_only_hash_of_normalized_code(factory, monkeypatch):
+    code = await _login_command(monkeypatch, factory, 4501)
+    plain = code.replace("-", "")
+
+    async with factory() as s:
+        rows = (await s.scalars(select(LoginCode))).all()
+        owner = await get_or_create_user(s, 4501)
+    assert len(rows) == 1
+    row = rows[0]
+    assert row.code_hash == hashlib.sha256(plain.encode()).hexdigest()
+    assert plain not in row.code_hash and code not in row.code_hash
+    assert row.confirmed_user_id == owner.id
+    assert row.used_at is None
+    lifetime = (row.expires_at - row.created_at).total_seconds()
+    assert abs(lifetime - LOGIN_CODE_TTL_SECONDS) < 1
+
+
+@pytest.mark.asyncio
+async def test_login_command_marks_bot_started(factory, monkeypatch):
+    await _login_command(monkeypatch, factory, 4502)
+    uid = await _user_id(factory, 4502)
+    assert await _bot_started_at(factory, uid) is not None
+
+
+@pytest.mark.asyncio
+async def test_login_message_text_has_warning(factory, monkeypatch):
+    monkeypatch.setattr(handlers, "SessionFactory", factory)
+    replies: list[str] = []
+    await handlers.cmd_login(_fake_message(4503, replies))
+    text = replies[0]
+    assert "5 минут" in text
+    assert "Никому не сообщайте этот код и не вводите его нигде, кроме сайта FridgeKeeper" in text
+
+
+@pytest.mark.asyncio
+async def test_start_login_argument_issues_code(factory, monkeypatch):
+    replies = await _send_start(monkeypatch, factory, 4510, "login")
+    assert len(replies) == 1
+    assert CODE_IN_TEXT.search(replies[0])
+    uid = await _user_id(factory, 4510)
+    assert await _bot_started_at(factory, uid) is not None
+
+
+@pytest.mark.asyncio
+async def test_old_login_prefix_start_issues_no_code(factory, monkeypatch):
+    """Старый параметр login_<код> больше не работает: это обычный link-токен, кода не будет."""
+    assert await _send_start(monkeypatch, factory, 4511, "login_" + "A" * 43) == [LINK_MESSAGES["invalid"]]
+    assert await _send_start(monkeypatch, factory, 4511, "login_ABCD-EFGH") == [LINK_MESSAGES["invalid"]]
+    async with factory() as s:
+        assert (await s.scalars(select(LoginCode))).all() == []
+
+
+@pytest.mark.asyncio
+async def test_new_code_revokes_previous_code_of_same_user(factory, monkeypatch):
     client = TestClient(app)
-    assert client.get("/auth/me", headers=_bearer_headers(token)).json() == {"user_id": uid, "bot_started": False}
-    await _send_start(monkeypatch, factory, 4311, "")
-    assert client.get("/auth/me", headers=_bearer_headers(token)).json() == {"user_id": uid, "bot_started": True}
+    first = await _login_command(monkeypatch, factory, 4520)
+    second = await _login_command(monkeypatch, factory, 4520)
+
+    assert _verify(client, first).status_code == 400
+    assert _verify(client, second).status_code == 200
 
 
-def test_me_without_session_is_401(factory):
-    assert TestClient(app).get("/auth/me").status_code == 401
+@pytest.mark.asyncio
+async def test_codes_of_different_users_do_not_revoke_each_other(factory, monkeypatch):
+    client = TestClient(app)
+    code_a = await _login_command(monkeypatch, factory, 4530)
+    code_b = await _login_command(monkeypatch, factory, 4531)
+
+    assert _verify(client, code_a).status_code == 200
+    assert _verify(client, code_b).status_code == 200
+
+
+def test_generated_codes_use_only_allowed_alphabet():
+    assert len(CODE_ALPHABET) == 32
+    assert not set("IO01") & set(CODE_ALPHABET)
+    for _ in range(500):
+        code = generate_code()
+        assert len(code) == CODE_LENGTH
+        assert set(code) <= set(CODE_ALPHABET)
+
+
+# --- Проверка кода на сайте -----------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_verify_with_code_sets_cookie_and_session_is_bot_started(factory, monkeypatch):
+    code = await _login_command(monkeypatch, factory, 4540)
+    client = TestClient(app)
+
+    response = _verify(client, code)
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
+    set_cookie = response.headers["set-cookie"].lower()
+    assert "httponly" in set_cookie
+    assert "secure" in set_cookie
+    assert "samesite=lax" in set_cookie
+
+    token = _cookie_value(response.headers["set-cookie"])
+    user_id, bot_started = read_session(token)
+    assert bot_started is True
+    assert user_id == await _user_id(factory, 4540)
+    assert client.get("/auth/me", headers=_cookie_headers(token)).json() == {
+        "user_id": user_id,
+        "bot_started": True,
+    }
+
+
+@pytest.mark.asyncio
+async def test_code_cannot_be_reused(factory, monkeypatch):
+    code = await _login_command(monkeypatch, factory, 4550)
+    client = TestClient(app)
+
+    assert _verify(client, code).status_code == 200
+    again = _verify(client, code)
+    assert again.status_code == 400
+    assert again.json() == {"detail": VERIFY_ERROR}
+
+
+@pytest.mark.asyncio
+async def test_expired_code_is_rejected(factory):
+    async with factory() as s:
+        code = await create_bot_login_code(s, 4560, ttl_seconds=-1)
+    response = _verify(TestClient(app), code)
+    assert response.status_code == 400
+    assert response.json() == {"detail": VERIFY_ERROR}
+    assert "set-cookie" not in response.headers
+
+
+@pytest.mark.asyncio
+async def test_wrong_code_is_rejected(factory, monkeypatch):
+    code = await _login_command(monkeypatch, factory, 4570)
+    wrong = "BBBB-BBBB" if code.replace("-", "") == "A" * 8 else "AAAA-AAAA"
+    response = _verify(TestClient(app), wrong)
+    assert response.status_code == 400
+    assert response.json() == {"detail": VERIFY_ERROR}
+    assert "set-cookie" not in response.headers
+
+
+@pytest.mark.asyncio
+async def test_empty_and_malformed_codes_are_400(factory):
+    client = TestClient(app)
+    for bad in ["", "   ", "-", "ABC", "ABCDEFGHJ", "ABCD-EFGI", "ABCD-EF0G", "абвг-абвг"]:
+        response = _verify(client, bad)
+        assert response.status_code == 400, bad
+        assert response.json() == {"detail": VERIFY_ERROR}, bad
+
+
+@pytest.mark.asyncio
+async def test_empty_code_field_is_400(factory):
+    response = TestClient(app).post("/auth/bot-login/verify", json={"code": ""})
+    assert response.status_code == 400
+    assert response.json() == {"detail": VERIFY_ERROR}
+
+
+@pytest.mark.asyncio
+async def test_code_is_normalized_lowercase_without_dash(factory, monkeypatch):
+    code = await _login_command(monkeypatch, factory, 4580)
+    variant = "  " + code.lower().replace("-", "") + "  "
+    assert _verify(TestClient(app), variant).status_code == 200
+
+
+def test_old_bot_login_endpoints_are_removed(factory):
+    client = TestClient(app)
+    assert client.post("/auth/bot-login/start").status_code in (404, 405)
+    assert client.get("/auth/bot-login/status", params={"code": "x"}).status_code in (404, 405)
+
+
+def test_old_callback_handler_is_removed():
+    assert not hasattr(handlers, "on_login_callback")
+    assert not hasattr(handlers, "_login_keyboard")
+
+
+# --- Команды бота ---------------------------------------------------------------------------
+
+
+def test_login_is_in_bot_commands_and_help():
+    assert "login" in [name for name, _ in BOT_COMMANDS]
+    assert "/login" in HELP_TEXT
+
+
+# --- Вход через Login Widget и Mini App (не меняется) ---------------------------------------
 
 
 def _signed_widget_fields(telegram_id: int, token: str) -> dict[str, str]:
@@ -456,21 +331,6 @@ async def test_widget_login_then_start_in_bot_same_session(factory, monkeypatch)
     me = client.get("/auth/me", headers=_cookie_headers(token)).json()
     assert me["bot_started"] is True
     assert me["user_id"] == await _user_id(factory, 4320)
-
-
-@pytest.mark.asyncio
-async def test_login_through_bot_gives_bot_started_true(factory, monkeypatch):
-    client = TestClient(app)
-    code = _start_code(client)
-    confirm_data, _ = await _start_via_bot(monkeypatch, factory, 4330, code)
-    assert await _press(monkeypatch, factory, 4330, confirm_data) == [LOGIN_MESSAGES["ok"]]
-
-    response = client.get("/auth/bot-login/status", params={"code": code})
-    token = _cookie_value(response.headers["set-cookie"])
-    assert client.get("/auth/me", headers=_cookie_headers(token)).json() == {
-        "user_id": await _user_id(factory, 4330),
-        "bot_started": True,
-    }
 
 
 @pytest.mark.asyncio
@@ -526,10 +386,12 @@ async def test_mark_bot_started_core(session):
     assert user.bot_started_at == first
 
 
-def test_unknown_user_id_reports_not_started(factory):
-    token = make_session_token(999999)
+def test_me_ignores_bs_claim_in_token(factory):
+    """Claim bs в токене не влияет на /auth/me: решает только БД. Пользователя 7 в БД нет."""
+    token = make_session_token(7, bot_started=True)
     response = TestClient(app).get("/auth/me", headers=_cookie_headers(token))
-    assert response.json() == {"user_id": 999999, "bot_started": False}
+    assert response.status_code == 200
+    assert response.json() == {"user_id": 7, "bot_started": False}
 
 
 def test_me_without_session_is_401(factory):
@@ -541,92 +403,3 @@ def test_token_without_bot_claim_reads_as_not_started():
     payload = base64.urlsafe_b64encode(json.dumps({"uid": 11, "exp": 4102444800}).encode()).decode()
     sig = hmac.new(SESSION_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
     assert read_session(f"{payload}.{sig}") == (11, False)
-
-
-def _other_nonce(nonce: str) -> str:
-    """Неверный нонс той же формы (16 hex) и гарантированно не равный данному."""
-    return ("f" if nonce[0] != "f" else "e") * 16
-
-
-@pytest.mark.asyncio
-async def test_core_wrong_or_empty_nonce_changes_nothing(session):
-    raw = await create_login_code(session)
-    _, row = await inspect_login_code(session, raw)
-    nonce = login_nonce(row)
-    row_id = row.id
-
-    assert await confirm_login_by_id(session, row_id, telegram_id=5010, nonce=_other_nonce(nonce)) is ConfirmStatus.INVALID
-    assert await cancel_login_by_id(session, row_id, nonce=_other_nonce(nonce)) is ConfirmStatus.INVALID
-    assert await confirm_login_by_id(session, row_id, telegram_id=5010, nonce="") is ConfirmStatus.INVALID
-    assert await check_login_code(session, raw) == ("pending", None)
-    stored = await session.scalar(select(LoginCode).where(LoginCode.id == row_id))
-    assert stored.confirmed_user_id is None
-    assert stored.used_at is None
-
-    # Верный нонс работает после неверных попыток
-    assert await confirm_login_by_id(session, row_id, telegram_id=5010, nonce=nonce) is ConfirmStatus.OK
-
-
-@pytest.mark.asyncio
-async def test_core_foreign_nonce_does_not_touch_other_code(session):
-    raw_a = await create_login_code(session)
-    raw_b = await create_login_code(session)
-    _, row_a = await inspect_login_code(session, raw_a)
-    _, row_b = await inspect_login_code(session, raw_b)
-    id_a, nonce_a, nonce_b = row_a.id, login_nonce(row_a), login_nonce(row_b)
-    assert nonce_a != nonce_b
-
-    assert await confirm_login_by_id(session, id_a, telegram_id=5011, nonce=nonce_b) is ConfirmStatus.INVALID
-    assert await cancel_login_by_id(session, id_a, nonce=nonce_b) is ConfirmStatus.INVALID
-    assert await check_login_code(session, raw_a) == ("pending", None)
-    assert await confirm_login_by_id(session, id_a, telegram_id=5011, nonce=nonce_a) is ConfirmStatus.OK
-
-
-@pytest.mark.asyncio
-async def test_bot_buttons_carry_nonce_and_fit_limit(factory, monkeypatch):
-    client = TestClient(app)
-    code = _start_code(client)
-    confirm_data, cancel_data = await _start_via_bot(monkeypatch, factory, 4400, code)
-    row = await _stored_row(factory, code)
-    nonce = login_nonce(row)
-
-    assert len(nonce) == 16 and re.fullmatch(r"[0-9a-f]{16}", nonce)
-    assert confirm_data == f"login:ok:{row.id}:{nonce}"
-    assert cancel_data == f"login:no:{row.id}:{nonce}"
-    assert len(confirm_data.encode("utf-8")) <= 64
-    assert len(cancel_data.encode("utf-8")) <= 64
-
-
-def test_callback_data_fits_telegram_limit_for_large_id():
-    big_id = 2**63 - 1
-    keyboard = handlers._login_keyboard(big_id, "f" * 16)
-    for button in keyboard.inline_keyboard[0]:
-        assert len(button.callback_data.encode("utf-8")) <= 64
-
-
-@pytest.mark.asyncio
-async def test_handler_wrong_nonce_keeps_pending_then_correct_confirms(factory, monkeypatch):
-    client = TestClient(app)
-    code = _start_code(client)
-    confirm_data, _ = await _start_via_bot(monkeypatch, factory, 4401, code)
-    row = await _stored_row(factory, code)
-    bad_nonce = _other_nonce(login_nonce(row))
-
-    assert await _press(monkeypatch, factory, 4401, f"login:ok:{row.id}:{bad_nonce}") == [LOGIN_MESSAGES["invalid"]]
-    assert await _press(monkeypatch, factory, 4401, f"login:no:{row.id}:{bad_nonce}") == [LOGIN_MESSAGES["invalid"]]
-    assert client.get("/auth/bot-login/status", params={"code": code}).json() == {"status": "pending"}
-
-    assert await _press(monkeypatch, factory, 4401, confirm_data) == [LOGIN_MESSAGES["ok"]]
-    assert client.get("/auth/bot-login/status", params={"code": code}).json() == {"status": "ok"}
-
-
-@pytest.mark.asyncio
-async def test_old_callback_without_nonce_is_ignored(factory, monkeypatch):
-    client = TestClient(app)
-    code = _start_code(client)
-    await _start_via_bot(monkeypatch, factory, 4402, code)
-    row = await _stored_row(factory, code)
-
-    assert await _press(monkeypatch, factory, 4402, f"login:ok:{row.id}") == []
-    assert await _press(monkeypatch, factory, 4402, f"login:no:{row.id}") == []
-    assert client.get("/auth/bot-login/status", params={"code": code}).json() == {"status": "pending"}

@@ -14,25 +14,13 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 from bot.formatting import (
     HELP_TEXT,
     LINK_MESSAGES,
-    LOGIN_BUTTON_CANCEL,
-    LOGIN_BUTTON_CONFIRM,
-    LOGIN_CALLBACK_MESSAGES,
-    LOGIN_MESSAGES,
+    LOGIN_CODE_TEXT,
     PHOTO_TEXTS,
     WELCOME_TEXT,
     days_left_text,
     format_products,
-    login_confirm_text,
 )
-from core.bot_login import (
-    START_PREFIX,
-    ConfirmStatus,
-    cancel_login_by_id,
-    confirm_login_by_id,
-    inspect_login_code,
-    is_login_code,
-    login_nonce,
-)
+from core.bot_login import create_bot_login_code
 from core.database import SessionFactory
 from core.label_service import analyze_label
 from core.linking import LinkStatus, consume_link_token
@@ -40,9 +28,11 @@ from core.notifications import TZ
 from core.ocr import OcrError
 from core.products import find_products_by_name, list_user_products, products_expiring_within
 from core.users import get_or_create_user, mark_bot_started
-from models import Product, utcnow
+from models import Product
 
 router = Router()
+
+LOGIN_START_ARG = "login"  # /start login: та же выдача кода, что и команда /login
 
 
 class AddFromPhoto(StatesGroup):
@@ -67,51 +57,27 @@ def parse_add_args(text: str) -> tuple[str, date | None] | None:
         return None
 
 
-def _login_keyboard(login_code_id: int, nonce: str) -> InlineKeyboardMarkup:
-    # В callback_data id строки и нонс (16 hex из code_hash), сам код в Telegram не уходит.
-    # Нонс не даёт подтвердить чужой код, угадав только id. Длина до 64 байт.
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text=LOGIN_BUTTON_CONFIRM, callback_data=f"login:ok:{login_code_id}:{nonce}"
-                ),
-                InlineKeyboardButton(
-                    text=LOGIN_BUTTON_CANCEL, callback_data=f"login:no:{login_code_id}:{nonce}"
-                ),
-            ]
-        ]
-    )
+async def _send_login_code(message: Message, telegram_id: int) -> None:
+    """Выдаёт код входа этому пользователю. Код уходит только в его чат с ботом."""
+    async with SessionFactory() as session:
+        await mark_bot_started(session, telegram_id)
+        code = await create_bot_login_code(session, telegram_id)
+    await message.answer(LOGIN_CODE_TEXT.format(code=code))
+
+
+@router.message(Command("login"))
+async def cmd_login(message: Message) -> None:
+    """Код для входа на сайт, привязанный к тому, кто написал команду."""
+    await _send_login_code(message, message.from_user.id)
 
 
 @router.message(CommandStart())
 async def cmd_start(message: Message, command: CommandObject) -> None:
-    """Регистрирует пользователя; при /start <token> связывает аккаунт с сайтом.
-
-    /start login_<code> НЕ подтверждает вход: показывает запрос с кнопками.
-    Привязка делается только в on_login_callback (кнопка «Подтвердить»).
-    """
+    """Регистрирует пользователя; /start login выдаёт код входа; /start <token> связывает аккаунт."""
     telegram_id = message.from_user.id
 
-    if command.args and command.args.startswith(START_PREFIX) and is_login_code(
-        command.args[len(START_PREFIX):].strip()
-    ):
-        code = command.args[len(START_PREFIX):].strip()
-        async with SessionFactory() as session:
-            status, row = await inspect_login_code(session, code)
-            # Значения берём до commit в get_or_create_user: после него строка может быть недоступна
-            login_id = row.id if row is not None else None
-            created_at = row.created_at if row is not None else None
-            nonce = login_nonce(row) if row is not None else None
-            await mark_bot_started(session, telegram_id)
-
-        if status is ConfirmStatus.PENDING and login_id is not None and nonce is not None:
-            await message.answer(
-                login_confirm_text(created_at or utcnow()),
-                reply_markup=_login_keyboard(login_id, nonce),
-            )
-            return
-        await message.answer(LOGIN_MESSAGES[status.value])
+    if (command.args or "").strip() == LOGIN_START_ARG:
+        await _send_login_code(message, telegram_id)
         return
 
     async with SessionFactory() as session:
@@ -126,48 +92,6 @@ async def cmd_start(message: Message, command: CommandObject) -> None:
 
     name = html.escape(message.from_user.first_name or "друг")
     await message.answer(WELCOME_TEXT.format(name=name))
-
-
-@router.callback_query(F.data.startswith("login:"))
-async def on_login_callback(callback: CallbackQuery) -> None:
-    """Кнопки «Подтвердить» (login:ok:<id>:<нонс>) и «Отмена» (login:no:<id>:<нонс>).
-
-    Старые кнопки без нонса (login:ok:<id>) и битые данные игнорируются без изменения БД.
-    """
-    parts = (callback.data or "").split(":")
-    if (
-        len(parts) != 4
-        or parts[0] != "login"
-        or parts[1] not in ("ok", "no")
-        or not parts[2].isdigit()
-        or not parts[3]
-    ):
-        await callback.answer()
-        return
-    login_id = int(parts[2])
-    nonce = parts[3]
-
-    async with SessionFactory() as session:
-        if parts[1] == "ok":
-            # telegram_id берётся только из callback: чужой код привязать нельзя
-            status = await confirm_login_by_id(session, login_id, callback.from_user.id, nonce)
-            if status is ConfirmStatus.OK:
-                # Подтверждение кнопкой тоже считается открытием бота
-                await mark_bot_started(session, callback.from_user.id)
-        else:
-            status = await cancel_login_by_id(session, login_id, nonce)
-
-    if status is ConfirmStatus.OK:
-        text = LOGIN_MESSAGES["ok"]
-    elif status is ConfirmStatus.CANCELLED:
-        text = LOGIN_CALLBACK_MESSAGES["cancelled"]
-    else:
-        text = LOGIN_MESSAGES.get(status.value, LOGIN_MESSAGES["invalid"])
-
-    await callback.answer()
-    if callback.message is not None:
-        await callback.message.edit_reply_markup(reply_markup=None)
-        await callback.message.answer(text)
 
 
 @router.message(Command("help"))
