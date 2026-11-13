@@ -1,8 +1,11 @@
 """Текст сообщений бота. Чистые функции без обращения к Telegram и БД, легко тестируются."""
 
 import html
+import math
 from collections.abc import Sequence
+from datetime import datetime, timedelta
 
+from core.notifications import TZ, deadline_for
 from models import Product
 
 HELP_TEXT = (
@@ -50,21 +53,34 @@ LINK_MESSAGES = {
 }
 
 
-def format_products(products: Sequence[Product]) -> str:
-    """Список продуктов с названием и датой окончания срока годности."""
+def format_products(products: Sequence[Product], now: datetime | None = None) -> str:
+    """Список продуктов: дата окончания срока и сколько осталось."""
     if not products:
         return "У вас пока нет продуктов. Добавьте их на сайте."
 
+    now = now or datetime.now(TZ)
     lines = ["<b>Ваши продукты:</b>"]
     for product in products:
-        expiry = (
-            product.expiry_date.strftime("%d.%m.%Y")
-            if product.expiry_date
-            else "срок не указан"
-        )
         # Название пользователя экранируем: Telegram разбирает HTML-разметку
-        lines.append(f"• {html.escape(product.name)} — до {expiry}")
+        name = html.escape(product.name)
+        if product.expiry_date is None:
+            lines.append(f"• {name} — срок не указан")
+            continue
+        expiry = product.expiry_date.strftime("%d.%m.%Y")
+        left = time_left_text(product.expiry_date, now)
+        lines.append(f"• {name} — до {expiry}, {left}")
     return "\n".join(lines)
+
+
+def time_left_text(expiry, now: datetime) -> str:
+    """Меньше 24 часов до конца срока — часы («осталось 5 ч»), иначе дни."""
+    if expiry is None:
+        return "срок не указан"
+    remaining = deadline_for(expiry) - now
+    if timedelta(0) < remaining < timedelta(hours=24):
+        hours = max(1, math.floor(remaining.total_seconds() / 3600))
+        return f"осталось {hours} ч"
+    return days_left_text(expiry, now.date())
 
 
 # Меню команд в Telegram: появляется, когда пользователь набирает «/»
