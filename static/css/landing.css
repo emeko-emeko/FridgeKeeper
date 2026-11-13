@@ -115,7 +115,7 @@ button { font: inherit; }
 /* Шапка */
 .nav {
   position: sticky; top: 0; z-index: 50;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: var(--bg);
   border-bottom: 1px solid transparent;
   transition: border-color 250ms ease, background-color 250ms ease;
 }
@@ -129,6 +129,7 @@ button { font: inherit; }
 .nav__links a:hover { color: var(--ink); }
 .nav__links a:hover::after { transform: scaleX(1); }
 .nav__actions { display: flex; align-items: center; gap: var(--s2); }
+.nav__open-short { display: none; }
 .lang-switch { font-size: 14px; color: var(--ink-2); text-decoration: none; transition: color 160ms var(--ease); }
 .lang-switch:hover { color: var(--ink); }
 
@@ -372,9 +373,17 @@ html.lenis, html.lenis body { height: auto; }
 }
 @media (max-width: 599px) {
   .container { padding: 0 var(--s2); }
+  .nav__inner { gap: 8px; }
+  .nav__actions { gap: 8px; }
+  .nav__open-full { display: none; }
+  .nav__open-short { display: inline; }
   .hero { padding: var(--s5) 0 var(--s5); }
   .section { padding: var(--s5) 0; }
   .final { padding: var(--s4) var(--s3); }
+}
+
+@media (max-width: 399px) {
+  .nav__brand span { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -48,7 +48,7 @@
       </nav>
       <div class="nav__actions">
         <a class="lang-switch" href="{{ request.url.include_query_params(lang=other_lang) }}" hreflang="{{ other_lang }}">{{ t.lang_switch }}</a>
-        <a class="btn btn--primary btn--small" href="{{ app_url }}"><span>{{ t.nav_open }}</span></a>
+        <a class="btn btn--primary btn--small" href="{{ app_url }}"><span class="nav__open-full">{{ t.nav_open }}</span><span class="nav__open-short" aria-hidden="true">{{ t.nav_open_short }}</span></a>
         <button class="theme-toggle" type="button" aria-label="{{ t.theme_label }}" title="{{ t.theme_label }}">
           <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
             <circle cx="12" cy="12" r="4"/>
