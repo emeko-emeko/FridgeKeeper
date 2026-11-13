@@ -122,6 +122,15 @@ async def web_app(request: Request):
     return render(request, "app.html", lang, save_lang)
 
 
+@app.get("/cabinet", response_class=HTMLResponse)
+async def cabinet(request: Request):
+    """Личный кабинет. Тот же вход и тот же контекст, что у /app; без сессии отправляем на вход."""
+    if read_session_token(request.cookies.get(SESSION_COOKIE)) is None:
+        return RedirectResponse(url="/login", status_code=303)
+    lang, save_lang = resolve_lang(request)
+    return render(request, "cabinet.html", lang, save_lang)
+
+
 @app.get("/mini", response_class=HTMLResponse)
 async def mini_app(request: Request) -> HTMLResponse:
     """Страница Mini App. Отдаётся с ПК через туннель, поэтому CORS не нужен."""

@@ -8,11 +8,13 @@
     <header class="app__head">
       <div class="app__head-text">
         <h1 class="app__title" id="summary">{{ t.app_title }}</h1>
+        <p class="app__sub" id="summary-sub" hidden></p>
       </div>
       <div class="app__head-actions">
+        <a class="btn btn--ghost btn--small" href="/cabinet">{{ t.app_cabinet }}</a>
         <button class="btn btn--ghost btn--small" id="head-add" type="button" hidden>{{ t.app_add }}</button>
-        <a class="btn btn--ghost btn--small" id="head-bot" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.app_bot }}</a>
-        <button class="btn btn--ghost btn--small" id="logout" type="button">{{ t.app_logout }}</button>
+        <a class="btn btn--link btn--small" id="head-bot" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.app_bot }}</a>
+        <button class="btn btn--link btn--small" id="logout" type="button">{{ t.app_logout }}</button>
       </div>
     </header>
 
@@ -28,6 +30,11 @@
     </section>
 
     <div id="main" hidden>
+      <section class="app-stats" aria-label="{{ t.app_stats_label }}">
+        <div id="stats" class="app-stats__row"></div>
+        <div id="stats-panel" class="app-stats__panel" hidden></div>
+      </section>
+
       <section class="app-card" aria-labelledby="add-title">
         <h2 id="add-title" class="app-card__title">{{ t.app_add_title }}</h2>
         <form id="add-form" class="app-form" autocomplete="off">
@@ -85,6 +92,17 @@
           </div>
         </div>
         <div id="list" class="app-groups"></div>
+      </section>
+
+      <section id="used-block" class="app-used" hidden>
+        <h2 class="app-used__head">
+          <button class="app-used__toggle" id="used-toggle" type="button" aria-expanded="false" aria-controls="used-list">
+            <span>{{ t.app_used_title }}</span>
+            <span class="app-group__count" id="used-count"></span>
+            <svg class="app-used__chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </h2>
+        <ul id="used-list" class="app-list" hidden></ul>
       </section>
     </div>
   </div>

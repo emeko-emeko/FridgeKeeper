@@ -35,7 +35,11 @@ async def check_once(
             await session.execute(
                 select(Product, User.telegram_id)
                 .join(User, Product.user_id == User.id)
-                .where(Product.expiry_date.is_not(None), User.telegram_id.is_not(None))
+                .where(
+                    Product.expiry_date.is_not(None),
+                    Product.used_at.is_(None),  # использованные продукты не напоминаем
+                    User.telegram_id.is_not(None),
+                )
             )
         ).all()
 

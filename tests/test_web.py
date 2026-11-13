@@ -192,8 +192,9 @@ def test_login_widget_with_valid_signature_sets_session(monkeypatch):
     class FakeUser:
         id = 7
 
-    async def fake_get_or_create_user(session, telegram_id):
+    async def fake_get_or_create_user(session, telegram_id, first_name=None):
         assert telegram_id == 42
+        assert first_name == "Тест"
         return FakeUser()
 
     monkeypatch.setattr(auth_module, "get_or_create_user", fake_get_or_create_user)

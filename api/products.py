@@ -3,7 +3,7 @@
 Фото читается в памяти и не сохраняется на диск.
 """
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
@@ -21,6 +21,10 @@ from models import Product
 router = APIRouter(prefix="/products")
 
 MAX_PHOTO_BYTES = 10 * 1024 * 1024  # 10 МБ
+
+
+def _used_at_json(product: Product) -> str | None:
+    return product.used_at.isoformat() if product.used_at else None
 
 
 async def get_session() -> AsyncSession:
@@ -82,6 +86,7 @@ async def create_product(
         "name": product.name,
         "expiry_date": product.expiry_date.isoformat() if product.expiry_date else None,
         "expiry_source": product.expiry_source,
+        "used_at": _used_at_json(product),
     }
 
 
@@ -96,6 +101,7 @@ async def list_products(
             "id": p.id,
             "name": p.name,
             "expiry_date": p.expiry_date.isoformat() if p.expiry_date else None,
+            "used_at": _used_at_json(p),
         }
         for p in products
     ]
@@ -107,6 +113,8 @@ class ProductUpdate(BaseModel):
     name: str | None = Field(default=None, max_length=100)
     expiry_date: date | None = None
     expiry_source: Literal["ocr", "manual", "bot"] | None = None
+    # true — отметить «Использовано» (время ставится, если его ещё нет), false — снять отметку
+    used: bool | None = None
 
 
 async def _own_product(session: AsyncSession, user_id: int, product_id: int) -> Product:
@@ -137,12 +145,18 @@ async def update_product(
     elif body.expiry_source is not None:
         product.expiry_source = body.expiry_source
 
+    if body.used is True and product.used_at is None:
+        product.used_at = datetime.now(UTC)
+    elif body.used is False:
+        product.used_at = None
+
     await session.commit()
     return {
         "id": product.id,
         "name": product.name,
         "expiry_date": product.expiry_date.isoformat() if product.expiry_date else None,
         "expiry_source": product.expiry_source,
+        "used_at": _used_at_json(product),
     }
 
 

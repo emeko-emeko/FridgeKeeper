@@ -20,5 +20,7 @@ class Product(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     # добавить к существующим полям класса Product
     expiry_source: Mapped[str | None] = mapped_column(String(16), nullable=True)  # "ocr" | "manual" | "bot"
+    # Когда продукт отмечен «Использовано». NULL — продукт активен. Такие продукты не участвуют в напоминаниях.
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     user: Mapped["User | None"] = relationship(back_populates="products")  # noqa: F821

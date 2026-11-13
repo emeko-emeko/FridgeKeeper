@@ -57,6 +57,20 @@ def verify_mini_app(init_data: str) -> int:
     return int(user["id"])
 
 
+def mini_app_first_name(init_data: str) -> str | None:
+    """Имя пользователя из initData. Вызывать после verify_mini_app: подпись здесь не проверяется.
+
+    Любой разбор с ошибкой даёт None, а не исключение: имя не обязательно для входа.
+    """
+    try:
+        fields = dict(parse_qsl(init_data, keep_blank_values=True))
+        user = json.loads(fields.get("user", "{}"))
+    except (ValueError, TypeError):
+        return None
+    name = user.get("first_name") if isinstance(user, dict) else None
+    return name if isinstance(name, str) else None
+
+
 def _check_age(auth_date: int) -> None:
     if time.time() - auth_date > MAX_AUTH_AGE_SECONDS:
         raise TelegramAuthError("Данные входа устарели, войдите снова")

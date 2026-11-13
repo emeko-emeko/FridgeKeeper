@@ -15,7 +15,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.bot_login import verify_bot_code
 from core.config import SESSION_SECRET
 from core.database import SessionFactory
-from core.telegram_auth import TelegramAuthError, verify_login_widget, verify_mini_app
+from core.telegram_auth import (
+    TelegramAuthError,
+    mini_app_first_name,
+    verify_login_widget,
+    verify_mini_app,
+)
 from core.users import get_or_create_user
 from models import LinkToken, User  # noqa: F401 — модели регистрируются через models
 
@@ -88,7 +93,7 @@ async def login_widget_callback(request: Request, session: AsyncSession = Depend
     except (TelegramAuthError, KeyError, ValueError) as err:
         raise HTTPException(status_code=400, detail=str(err)) from err
 
-    user = await get_or_create_user(session, telegram_id)
+    user = await get_or_create_user(session, telegram_id, first_name=fields.get("first_name"))
     token = make_session_token(user.id)
 
     response = RedirectResponse(url="/app", status_code=303)
@@ -114,7 +119,9 @@ async def mini_app_auth(body: MiniAppAuth, session: AsyncSession = Depends(get_s
     except TelegramAuthError as err:
         raise HTTPException(status_code=401, detail=str(err)) from err
 
-    user = await get_or_create_user(session, telegram_id)
+    user = await get_or_create_user(
+        session, telegram_id, first_name=mini_app_first_name(body.init_data)
+    )
     return {"ok": True, "token": make_session_token(user.id)}
 
 
@@ -161,7 +168,11 @@ async def me(
     """
     user_id, _ = info
     user = await session.get(User, user_id)
-    return {"user_id": user_id, "bot_started": user is not None and user.bot_started_at is not None}
+    return {
+        "user_id": user_id,
+        "bot_started": user is not None and user.bot_started_at is not None,
+        "first_name": user.first_name if user is not None else None,
+    }
 
 
 MAX_BOT_CODE_LENGTH = 32

@@ -229,6 +229,7 @@ async def test_verify_with_code_sets_cookie_and_session_is_bot_started(factory, 
     assert client.get("/auth/me", headers=_cookie_headers(token)).json() == {
         "user_id": user_id,
         "bot_started": True,
+        "first_name": "Тест",
     }
 
 
@@ -403,7 +404,7 @@ def test_me_ignores_bs_claim_in_token(factory):
     token = make_session_token(7, bot_started=True)
     response = TestClient(app).get("/auth/me", headers=_cookie_headers(token))
     assert response.status_code == 200
-    assert response.json() == {"user_id": 7, "bot_started": False}
+    assert response.json() == {"user_id": 7, "bot_started": False, "first_name": None}
 
 
 def test_me_without_session_is_401(factory):

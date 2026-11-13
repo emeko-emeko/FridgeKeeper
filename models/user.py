@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime
+from sqlalchemy import BigInteger, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, utcnow
@@ -17,6 +17,8 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     # Первый /start в боте (или подтверждение входа кнопкой). NULL, пока бота не открывали.
     bot_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Имя из Telegram (first_name). Обновляется при входе, если изменилось. NULL, пока неизвестно.
+    first_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     products: Mapped[list["Product"]] = relationship(  # noqa: F821 (определена в product.py)
         back_populates="user", cascade="all, delete-orphan"

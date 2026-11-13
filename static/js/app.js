@@ -23,6 +23,10 @@
   var photoButtons = [$("photo-camera-btn"), $("photo-file-btn")];
   var suggested = { name: "", expiry: null };
   var summary = $("summary"), DEFAULT_TITLE = summary.textContent;
+  var summarySub = $("summary-sub"), firstName = null;
+  var statsRow = $("stats"), statsPanel = $("stats-panel");
+  var usedBlock = $("used-block"), usedToggle = $("used-toggle"), usedList = $("used-list"), usedCount = $("used-count");
+  var openStat = null, lastStats = null;
   var headAdd = $("head-add");
   headAdd.addEventListener("click", function () {
     $("add-name").scrollIntoView({ block: "center" });
@@ -136,10 +140,49 @@
     li.appendChild(el("span", "app-pill app-pill--" + d.level, d.text));
 
     var buttons = el("div", "app-item__buttons");
+    buttons.appendChild(button(tr("mark_used"), "app-link app-link--used", function (b) { setUsed(p, true, b); }));
     buttons.appendChild(button(tr("edit"), "app-link", function () { startEdit(li, p); }));
     buttons.appendChild(button(tr("delete"), "app-link app-link--danger", function (b) { remove(p, b); }));
     li.appendChild(buttons);
     return li;
+  }
+
+  // Использованный продукт: строка в нижнем блоке с кнопками «Вернуть» и «Удалить».
+  function renderUsedItem(p) {
+    var li = el("li", "app-item app-item--used");
+    var body = el("div", "app-item__main");
+    body.appendChild(el("p", "app-item__name", p.name));
+    var day = usedDay(p.used_at);
+    if (day) body.appendChild(el("p", "app-item__meta", tr("used_on", { date: formatDate(day) })));
+    li.appendChild(body);
+    var buttons = el("div", "app-item__buttons");
+    buttons.appendChild(button(tr("restore"), "app-link", function (b) { setUsed(p, false, b); }));
+    buttons.appendChild(button(tr("delete"), "app-link app-link--danger", function (b) { remove(p, b); }));
+    li.appendChild(buttons);
+    return li;
+  }
+
+  // Дата used_at по Asia/Almaty (UTC+5). Строка без часового пояса считается UTC.
+  function usedDay(iso) {
+    if (!iso) return "";
+    var s = /[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : iso + "Z";
+    var t = Date.parse(s);
+    if (isNaN(t)) return "";
+    return new Date(t + 5 * 3600 * 1000).toISOString().slice(0, 10);
+  }
+
+  function setUsed(p, used, btn) {
+    var siblings = btn && btn.parentNode ? Array.prototype.slice.call(btn.parentNode.children) : [btn];
+    return locked(siblings, async function () {
+      var r = await api("/products/" + p.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ used: used }),
+      });
+      if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
+      say("");
+      await load();
+    });
   }
 
   function startEdit(li, p) {
@@ -197,6 +240,9 @@
     var items;
     try { items = await r.json(); } catch (e) { say(tr("network"), true); return; }
     items.sort(function (a, b) { return sortKey(a) - sortKey(b); });
+    var allItems = items;
+    var usedItems = items.filter(function (p) { return !!p.used_at; });
+    items = items.filter(function (p) { return !p.used_at; });
     list.textContent = "";
     var order = ["expired", "urgent", "soon", "ok", "none"];
     var names = { expired: "g_expired", urgent: "g_today", soon: "g_soon", ok: "g_later", none: "g_none" };
@@ -214,9 +260,69 @@
       sec.appendChild(ul);
       list.appendChild(sec);
     });
-    empty.hidden = items.length > 0;
-    summary.textContent = summaryText(groups, items.length);
+    empty.hidden = allItems.length > 0;
+    var text = summaryText(groups, items.length);
+    if (firstName) {
+      summary.textContent = tr("hello", { name: firstName });
+      summarySub.textContent = items.length ? text : "";
+      summarySub.hidden = !items.length;
+    } else {
+      summary.textContent = text;
+      summarySub.hidden = true;
+    }
+
+    usedList.textContent = "";
+    usedItems.forEach(function (p) { usedList.appendChild(renderUsedItem(p)); });
+    usedCount.textContent = String(usedItems.length);
+    usedBlock.hidden = !usedItems.length;
+
+    lastStats = {
+      total: allItems,
+      soon: groups.urgent.concat(groups.soon),
+      expired: groups.expired,
+      used: usedItems,
+    };
+    renderStats();
   }
+
+  // Карточки-счётчики. Список названий раскрывается под рядом; открыта может быть одна карточка.
+  function renderStats() {
+    var defs = [["total", "st_total"], ["soon", "st_soon"], ["expired", "st_expired"], ["used", "st_used"]];
+    statsRow.textContent = "";
+    defs.forEach(function (d) {
+      var key = d[0];
+      var b = el("button", "app-stat app-stat--" + key + (openStat === key ? " is-open" : ""));
+      b.type = "button";
+      b.setAttribute("aria-expanded", openStat === key ? "true" : "false");
+      b.setAttribute("aria-controls", "stats-panel");
+      b.appendChild(el("span", "app-stat__num", String(lastStats[key].length)));
+      b.appendChild(el("span", "app-stat__label", tr(d[1])));
+      b.addEventListener("click", function () {
+        openStat = openStat === key ? null : key;
+        renderStats();
+        var again = statsRow.querySelector(".app-stat--" + key);
+        if (again) again.focus();
+      });
+      statsRow.appendChild(b);
+    });
+    statsPanel.textContent = "";
+    if (!openStat) { statsPanel.hidden = true; return; }
+    var names = lastStats[openStat];
+    if (!names.length) {
+      statsPanel.appendChild(el("p", "app-hint", tr("st_empty")));
+    } else {
+      var ul = el("ul", "app-stats__names");
+      names.forEach(function (p) { ul.appendChild(el("li", null, p.name)); });
+      statsPanel.appendChild(ul);
+    }
+    statsPanel.hidden = false;
+  }
+
+  usedToggle.addEventListener("click", function () {
+    var open = usedToggle.getAttribute("aria-expanded") === "true";
+    usedToggle.setAttribute("aria-expanded", open ? "false" : "true");
+    usedList.hidden = open;
+  });
 
   function summaryText(g, total) {
     var soon = g.urgent.length + g.soon.length;
@@ -342,6 +448,7 @@
     var r = await api("/auth/me");
     if (!r.ok) return true;
     var data = await r.json();
+    firstName = typeof data.first_name === "string" && data.first_name.trim() ? data.first_name.trim() : null;
     return data.bot_started !== false;
   }
 

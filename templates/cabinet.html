@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.cabinet_page_title }}{% endblock %}
+
+{% block content %}
+<main class="app cabinet">
+  <div class="container app__inner">
+    <header class="app__head">
+      <div class="app__head-text">
+        <h1 class="app__title">{{ t.cabinet_title }}</h1>
+      </div>
+      <div class="app__head-actions">
+        <a class="btn btn--ghost btn--small" href="/app">{{ t.cabinet_back }}</a>
+      </div>
+    </header>
+
+    <p id="notice" class="app__notice" role="status" aria-live="polite"></p>
+
+    <div id="cab-main" hidden>
+      <section class="cab-totals">
+        <div class="cab-total">
+          <p class="cab-total__num" id="cab-used-num">0</p>
+          <p class="cab-total__label">{{ t.cabinet_used_total }}</p>
+          <p class="cab-total__pct" id="cab-used-pct"></p>
+        </div>
+        <div class="cab-total cab-total--expired">
+          <p class="cab-total__num" id="cab-expired-num">0</p>
+          <p class="cab-total__label">{{ t.cabinet_expired_total }}</p>
+          <p class="cab-total__pct" id="cab-expired-pct"></p>
+        </div>
+      </section>
+
+      <section class="app-card cab-chart" aria-labelledby="chart-title">
+        <h2 id="chart-title" class="app-card__title">{{ t.cabinet_chart_title }}</h2>
+        <ul class="cab-legend">
+          <li><span class="cab-key cab-key--used" aria-hidden="true"></span>{{ t.cabinet_legend_used }}</li>
+          <li><span class="cab-key cab-key--expired" aria-hidden="true"></span>{{ t.cabinet_legend_expired }}</li>
+        </ul>
+        <div id="cab-empty" class="app-empty" hidden>
+          <p class="app-empty__title">{{ t.cabinet_empty_title }}</p>
+          <p class="app-empty__text">{{ t.cabinet_empty_text }}</p>
+        </div>
+        <div id="cab-chart" class="cab-bars" aria-hidden="true"></div>
+        <table class="cab-sr" id="cab-table">
+          <thead>
+            <tr><th scope="col">{{ t.cabinet_th_date }}</th><th scope="col">{{ t.cabinet_th_used }}</th><th scope="col">{{ t.cabinet_th_expired }}</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p class="app-hint">{{ t.cabinet_note }}</p>
+      </section>
+    </div>
+  </div>
+</main>
+<link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+<script src="{{ url_for('static', path='js/cabinet.js') }}" defer></script>
+{% endblock %}

@@ -60,7 +60,7 @@ def parse_add_args(text: str) -> tuple[str, date | None] | None:
 async def _send_login_code(message: Message, telegram_id: int) -> None:
     """Выдаёт код входа этому пользователю. Код уходит только в его чат с ботом."""
     async with SessionFactory() as session:
-        await mark_bot_started(session, telegram_id)
+        await mark_bot_started(session, telegram_id, message.from_user.first_name)
         code = await create_bot_login_code(session, telegram_id)
     await message.answer(LOGIN_CODE_TEXT.format(code=code))
 
@@ -80,15 +80,16 @@ async def cmd_start(message: Message, command: CommandObject) -> None:
         await _send_login_code(message, telegram_id)
         return
 
+    first_name = message.from_user.first_name
     async with SessionFactory() as session:
         # Сначала связывание: иначе запись, созданная get_or_create_user, сама займёт telegram_id
         if command.args:
             status = await consume_link_token(session, command.args.strip(), telegram_id)
-            await mark_bot_started(session, telegram_id)
+            await mark_bot_started(session, telegram_id, first_name)
             await message.answer(LINK_MESSAGES[status.value])
             return
 
-        await mark_bot_started(session, telegram_id)
+        await mark_bot_started(session, telegram_id, first_name)
 
     name = html.escape(message.from_user.first_name or "друг")
     await message.answer(WELCOME_TEXT.format(name=name))
@@ -106,8 +107,8 @@ async def cmd_my_products(message: Message) -> None:
     telegram_id = message.from_user.id
 
     async with SessionFactory() as session:
-        user = await get_or_create_user(session, telegram_id)
-        products = await list_user_products(session, user.id)
+        user = await get_or_create_user(session, telegram_id, message.from_user.first_name)
+        products = await list_user_products(session, user.id, include_used=False)
 
     await message.answer(format_products(products))
 
@@ -122,7 +123,7 @@ async def cmd_add(message: Message, command: CommandObject) -> None:
     name, expiry = parsed
 
     async with SessionFactory() as session:
-        user = await get_or_create_user(session, message.from_user.id)
+        user = await get_or_create_user(session, message.from_user.id, message.from_user.first_name)
         session.add(Product(user_id=user.id, name=name, expiry_date=expiry, expiry_source="bot"))
         await session.commit()
 
