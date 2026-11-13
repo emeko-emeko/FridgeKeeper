@@ -34,6 +34,7 @@ from core.bot_login import (
     create_login_code,
     inspect_login_code,
     is_login_code,
+    login_nonce,
 )
 import core.telegram_auth as tg_auth
 from core.database import init_db, make_session_factory
@@ -244,12 +245,14 @@ async def test_confirm_after_cancel_is_used_and_site_stays_expired(factory, monk
 
 @pytest.mark.asyncio
 async def test_unknown_or_foreign_id_is_safe(factory, monkeypatch):
-    """Нажатие по несуществующему id, с битым callback и с чужим id не падает и ничего не меняет."""
-    assert await _press(monkeypatch, factory, 4280, "login:ok:999999") == [LOGIN_MESSAGES["invalid"]]
-    assert await _press(monkeypatch, factory, 4280, "login:no:999999") == [LOGIN_MESSAGES["invalid"]]
-    assert await _press(monkeypatch, factory, 4280, "login:ok:abc") == []
-    assert await _press(monkeypatch, factory, 4280, "login:drop:1") == []
+    """Несуществующий id, битые callback и старые кнопки без нонса не падают и ничего не меняют."""
+    fake_nonce = "0" * 16
+    assert await _press(monkeypatch, factory, 4280, f"login:ok:999999:{fake_nonce}") == [LOGIN_MESSAGES["invalid"]]
+    assert await _press(monkeypatch, factory, 4280, f"login:no:999999:{fake_nonce}") == [LOGIN_MESSAGES["invalid"]]
+    assert await _press(monkeypatch, factory, 4280, "login:ok:abc:" + fake_nonce) == []
+    assert await _press(monkeypatch, factory, 4280, "login:drop:1:" + fake_nonce) == []
     assert await _press(monkeypatch, factory, 4280, "login:ok") == []
+    assert await _press(monkeypatch, factory, 4280, "login:ok:1") == []  # старая форма без нонса
 
 
 @pytest.mark.asyncio
@@ -257,14 +260,14 @@ async def test_expired_code_start_and_buttons(factory, monkeypatch):
     async with factory() as s:
         raw = await create_login_code(s, ttl_seconds=-1)
         _, row = await inspect_login_code(s, raw)
-        login_id = row.id
+        login_id, nonce = row.id, login_nonce(row)
 
     assert await _send_start(monkeypatch, factory, 4290, f"login_{raw}") == (
         [LOGIN_MESSAGES["expired"]],
         [None],
     )
-    assert await _press(monkeypatch, factory, 4290, f"login:ok:{login_id}") == [LOGIN_MESSAGES["expired"]]
-    assert await _press(monkeypatch, factory, 4290, f"login:no:{login_id}") == [LOGIN_MESSAGES["expired"]]
+    assert await _press(monkeypatch, factory, 4290, f"login:ok:{login_id}:{nonce}") == [LOGIN_MESSAGES["expired"]]
+    assert await _press(monkeypatch, factory, 4290, f"login:no:{login_id}:{nonce}") == [LOGIN_MESSAGES["expired"]]
 
 
 @pytest.mark.asyncio
@@ -325,8 +328,9 @@ async def test_expired_code_is_rejected_by_site_and_bot(session):
     _, row = await inspect_login_code(session, raw)
 
     assert await check_login_code(session, raw) == ("expired", None)
-    assert await confirm_login_by_id(session, row.id, telegram_id=5001) is ConfirmStatus.EXPIRED
-    assert await cancel_login_by_id(session, row.id) is ConfirmStatus.EXPIRED
+    nonce = login_nonce(row)
+    assert await confirm_login_by_id(session, row.id, telegram_id=5001, nonce=nonce) is ConfirmStatus.EXPIRED
+    assert await cancel_login_by_id(session, row.id, nonce=nonce) is ConfirmStatus.EXPIRED
 
 
 @pytest.mark.asyncio
@@ -347,7 +351,7 @@ async def test_core_confirm_then_check_returns_user_once(session):
     _, row = await inspect_login_code(session, raw)
 
     assert await check_login_code(session, raw) == ("pending", None)
-    assert await confirm_login_by_id(session, row.id, telegram_id=5002) is ConfirmStatus.OK
+    assert await confirm_login_by_id(session, row.id, telegram_id=5002, nonce=login_nonce(row)) is ConfirmStatus.OK
     assert await check_login_code(session, raw) == ("ok", user.id)
     assert await check_login_code(session, raw) == ("expired", None)
 
@@ -356,17 +360,19 @@ async def test_core_confirm_then_check_returns_user_once(session):
 async def test_confirm_twice_is_used(session):
     raw = await create_login_code(session)
     _, row = await inspect_login_code(session, raw)
-    assert await confirm_login_by_id(session, row.id, telegram_id=5003) is ConfirmStatus.OK
-    assert await confirm_login_by_id(session, row.id, telegram_id=5004) is ConfirmStatus.USED
+    nonce = login_nonce(row)
+    assert await confirm_login_by_id(session, row.id, telegram_id=5003, nonce=nonce) is ConfirmStatus.OK
+    assert await confirm_login_by_id(session, row.id, telegram_id=5004, nonce=nonce) is ConfirmStatus.USED
 
 
 @pytest.mark.asyncio
 async def test_cancel_then_check_is_expired(session):
     raw = await create_login_code(session)
     _, row = await inspect_login_code(session, raw)
-    assert await cancel_login_by_id(session, row.id) is ConfirmStatus.CANCELLED
+    nonce = login_nonce(row)
+    assert await cancel_login_by_id(session, row.id, nonce=nonce) is ConfirmStatus.CANCELLED
     assert await check_login_code(session, raw) == ("expired", None)
-    assert await confirm_login_by_id(session, row.id, telegram_id=5005) is ConfirmStatus.USED
+    assert await confirm_login_by_id(session, row.id, telegram_id=5005, nonce=nonce) is ConfirmStatus.USED
 
 
 @pytest.mark.asyncio
@@ -535,3 +541,92 @@ def test_token_without_bot_claim_reads_as_not_started():
     payload = base64.urlsafe_b64encode(json.dumps({"uid": 11, "exp": 4102444800}).encode()).decode()
     sig = hmac.new(SESSION_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
     assert read_session(f"{payload}.{sig}") == (11, False)
+
+
+def _other_nonce(nonce: str) -> str:
+    """Неверный нонс той же формы (16 hex) и гарантированно не равный данному."""
+    return ("f" if nonce[0] != "f" else "e") * 16
+
+
+@pytest.mark.asyncio
+async def test_core_wrong_or_empty_nonce_changes_nothing(session):
+    raw = await create_login_code(session)
+    _, row = await inspect_login_code(session, raw)
+    nonce = login_nonce(row)
+    row_id = row.id
+
+    assert await confirm_login_by_id(session, row_id, telegram_id=5010, nonce=_other_nonce(nonce)) is ConfirmStatus.INVALID
+    assert await cancel_login_by_id(session, row_id, nonce=_other_nonce(nonce)) is ConfirmStatus.INVALID
+    assert await confirm_login_by_id(session, row_id, telegram_id=5010, nonce="") is ConfirmStatus.INVALID
+    assert await check_login_code(session, raw) == ("pending", None)
+    stored = await session.scalar(select(LoginCode).where(LoginCode.id == row_id))
+    assert stored.confirmed_user_id is None
+    assert stored.used_at is None
+
+    # Верный нонс работает после неверных попыток
+    assert await confirm_login_by_id(session, row_id, telegram_id=5010, nonce=nonce) is ConfirmStatus.OK
+
+
+@pytest.mark.asyncio
+async def test_core_foreign_nonce_does_not_touch_other_code(session):
+    raw_a = await create_login_code(session)
+    raw_b = await create_login_code(session)
+    _, row_a = await inspect_login_code(session, raw_a)
+    _, row_b = await inspect_login_code(session, raw_b)
+    id_a, nonce_a, nonce_b = row_a.id, login_nonce(row_a), login_nonce(row_b)
+    assert nonce_a != nonce_b
+
+    assert await confirm_login_by_id(session, id_a, telegram_id=5011, nonce=nonce_b) is ConfirmStatus.INVALID
+    assert await cancel_login_by_id(session, id_a, nonce=nonce_b) is ConfirmStatus.INVALID
+    assert await check_login_code(session, raw_a) == ("pending", None)
+    assert await confirm_login_by_id(session, id_a, telegram_id=5011, nonce=nonce_a) is ConfirmStatus.OK
+
+
+@pytest.mark.asyncio
+async def test_bot_buttons_carry_nonce_and_fit_limit(factory, monkeypatch):
+    client = TestClient(app)
+    code = _start_code(client)
+    confirm_data, cancel_data = await _start_via_bot(monkeypatch, factory, 4400, code)
+    row = await _stored_row(factory, code)
+    nonce = login_nonce(row)
+
+    assert len(nonce) == 16 and re.fullmatch(r"[0-9a-f]{16}", nonce)
+    assert confirm_data == f"login:ok:{row.id}:{nonce}"
+    assert cancel_data == f"login:no:{row.id}:{nonce}"
+    assert len(confirm_data.encode("utf-8")) <= 64
+    assert len(cancel_data.encode("utf-8")) <= 64
+
+
+def test_callback_data_fits_telegram_limit_for_large_id():
+    big_id = 2**63 - 1
+    keyboard = handlers._login_keyboard(big_id, "f" * 16)
+    for button in keyboard.inline_keyboard[0]:
+        assert len(button.callback_data.encode("utf-8")) <= 64
+
+
+@pytest.mark.asyncio
+async def test_handler_wrong_nonce_keeps_pending_then_correct_confirms(factory, monkeypatch):
+    client = TestClient(app)
+    code = _start_code(client)
+    confirm_data, _ = await _start_via_bot(monkeypatch, factory, 4401, code)
+    row = await _stored_row(factory, code)
+    bad_nonce = _other_nonce(login_nonce(row))
+
+    assert await _press(monkeypatch, factory, 4401, f"login:ok:{row.id}:{bad_nonce}") == [LOGIN_MESSAGES["invalid"]]
+    assert await _press(monkeypatch, factory, 4401, f"login:no:{row.id}:{bad_nonce}") == [LOGIN_MESSAGES["invalid"]]
+    assert client.get("/auth/bot-login/status", params={"code": code}).json() == {"status": "pending"}
+
+    assert await _press(monkeypatch, factory, 4401, confirm_data) == [LOGIN_MESSAGES["ok"]]
+    assert client.get("/auth/bot-login/status", params={"code": code}).json() == {"status": "ok"}
+
+
+@pytest.mark.asyncio
+async def test_old_callback_without_nonce_is_ignored(factory, monkeypatch):
+    client = TestClient(app)
+    code = _start_code(client)
+    await _start_via_bot(monkeypatch, factory, 4402, code)
+    row = await _stored_row(factory, code)
+
+    assert await _press(monkeypatch, factory, 4402, f"login:ok:{row.id}") == []
+    assert await _press(monkeypatch, factory, 4402, f"login:no:{row.id}") == []
+    assert client.get("/auth/bot-login/status", params={"code": code}).json() == {"status": "pending"}

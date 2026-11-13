@@ -12,6 +12,7 @@
 """
 
 import hashlib
+import hmac
 import secrets
 from datetime import timedelta
 from enum import Enum
@@ -25,6 +26,7 @@ from models import LoginCode, utcnow
 LOGIN_CODE_TTL_SECONDS = 5 * 60  # код действует 5 минут
 START_PREFIX = "login_"  # параметр /start: login_<код>
 LOGIN_CODE_LENGTH = 43  # token_urlsafe(32) даёт ровно 43 символа
+NONCE_LENGTH = 16  # первые hex-символы code_hash; кладутся в callback_data кнопок
 
 
 class ConfirmStatus(Enum):
@@ -45,6 +47,16 @@ def is_login_code(code: str) -> bool:
 
 def _hash_code(raw_code: str) -> str:
     return hashlib.sha256(raw_code.encode("utf-8")).hexdigest()
+
+
+def login_nonce(row: LoginCode) -> str:
+    """Нонс строки для callback_data кнопок: префикс уже хранимого code_hash, секрет не раскрывает."""
+    return row.code_hash[:NONCE_LENGTH]
+
+
+def _nonce_matches(row: LoginCode, nonce: str) -> bool:
+    """Сравнение нонса с code_hash строки за постоянное время."""
+    return hmac.compare_digest(login_nonce(row).encode("utf-8"), nonce.encode("utf-8"))
 
 
 def _state(row: LoginCode) -> ConfirmStatus:
@@ -98,10 +110,15 @@ async def inspect_login_code(session: AsyncSession, raw_code: str) -> tuple[Conf
     return _state(row), row
 
 
-async def confirm_login_by_id(session: AsyncSession, login_code_id: int, telegram_id: int) -> ConfirmStatus:
-    """Вызывается только из кнопки «Подтвердить». Привязывает код к telegram_id нажавшего."""
+async def confirm_login_by_id(
+    session: AsyncSession, login_code_id: int, telegram_id: int, nonce: str
+) -> ConfirmStatus:
+    """Вызывается только из кнопки «Подтвердить». Привязывает код к telegram_id нажавшего.
+
+    Без совпадения нонса (защита от подбора id и login CSRF) возвращает INVALID и ничего не меняет.
+    """
     row = await _find_by_id(session, login_code_id)
-    if row is None:
+    if row is None or not _nonce_matches(row, nonce):
         return ConfirmStatus.INVALID
     status = _state(row)
     if status is not ConfirmStatus.PENDING:
@@ -130,10 +147,13 @@ async def confirm_login_by_id(session: AsyncSession, login_code_id: int, telegra
     return ConfirmStatus.OK
 
 
-async def cancel_login_by_id(session: AsyncSession, login_code_id: int) -> ConfirmStatus:
-    """Вызывается из кнопки «Отмена». Гасит код: сайт при опросе получит «expired»."""
+async def cancel_login_by_id(session: AsyncSession, login_code_id: int, nonce: str) -> ConfirmStatus:
+    """Вызывается из кнопки «Отмена». Гасит код: сайт при опросе получит «expired».
+
+    Без совпадения нонса возвращает INVALID и ничего не меняет.
+    """
     row = await _find_by_id(session, login_code_id)
-    if row is None:
+    if row is None or not _nonce_matches(row, nonce):
         return ConfirmStatus.INVALID
     status = _state(row)
     if status is not ConfirmStatus.PENDING:
