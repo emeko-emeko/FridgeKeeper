@@ -1,5 +1,7 @@
 """Работа с пользователями: получение или создание записи по Telegram ID."""
 
+from datetime import UTC, datetime
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,5 +22,17 @@ async def get_or_create_user(session: AsyncSession, telegram_id: int) -> User:
     if user is None:
         user = User(telegram_id=telegram_id)
         session.add(user)
+        await session.commit()
+    return user
+
+
+async def mark_bot_started(session: AsyncSession, telegram_id: int) -> User:
+    """Фиксирует, что пользователь открыл бота (/start или подтверждение входа).
+
+    Пишет bot_started_at только если поле пустое: повторные вызовы ничего не меняют.
+    """
+    user = await get_or_create_user(session, telegram_id)
+    if user.bot_started_at is None:
+        user.bot_started_at = datetime.now(UTC)  # aware: PostgreSQL хранит timestamptz
         await session.commit()
     return user

@@ -19,7 +19,8 @@
   line-height: 1.15;
 }
 .app__lead { margin: var(--s1) 0 0; color: var(--ink-2); line-height: 1.6; }
-.app__head-actions { display: flex; gap: var(--s1); }
+.app__head-text { min-width: 0; }
+.app__head-actions { display: flex; flex-wrap: wrap; gap: var(--s1); }
 
 .app__notice {
   min-height: 24px;
@@ -36,7 +37,7 @@
   padding: var(--s3);
   margin-bottom: var(--s4);
 }
-.app-card__title { margin: 0 0 var(--s2); font-family: var(--font-display); font-size: 22px; line-height: 1.3; font-weight: 500; }
+.app-card__title { margin: 0 0 var(--s2); font-family: var(--font-ui); font-size: 20px; line-height: 1.3; font-weight: 500; }
 .app-list-title { margin-bottom: var(--s2); }
 
 .app-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--s2); }
@@ -57,6 +58,15 @@
 .app-hint { margin: var(--s1) 0 0; font-size: 13px; color: var(--ink-3); line-height: 1.5; }
 .app-photo { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
 .app-photo .app-hint { margin-top: var(--s1); }
+.app-photo__row { display: flex; flex-wrap: wrap; gap: var(--s1); }
+
+/* Экран «сначала запустите бота» вместо формы и списка */
+.app-gate { padding: var(--s4) var(--s3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); }
+.app-gate[hidden], #main[hidden] { display: none; }
+#head-bot[hidden] { display: none; }
+.app-gate__text { margin: 0 0 var(--s3); max-width: 52ch; color: var(--ink-2); line-height: 1.6; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.app-link:disabled { opacity: 0.5; cursor: default; }
 
 .app-review { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
 .app-review[hidden], .app-warn[hidden] { display: none; }
@@ -95,7 +105,7 @@
 .app-item__main { flex: 1 1 200px; min-width: 0; }
 .app-item__name { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
 .app-item__meta { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.app-item--expired .app-item__meta { color: var(--accent); font-weight: 500; }
+.app-item--expired .app-item__meta { color: var(--ink-2); }
 
 .app-item__buttons { display: flex; gap: var(--s1); }
 .app-link {
@@ -117,10 +127,18 @@
 
 .app-item__edit { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--s1); width: 100%; }
 .app-item__edit .app-field input { height: 48px; }
+.app-item__edit-actions { display: flex; flex-wrap: wrap; gap: var(--s1); }
 
 @media (max-width: 560px) {
   .app { padding-top: var(--s4); }
+  .app__head-actions { width: 100%; }
+  .app__head-actions .btn { flex: 1; }
+  .app-card { padding: var(--s2); }
+  .app-gate { padding: var(--s3) var(--s2); }
   .app-form .btn, .app-actions .btn { width: 100%; }
+  .app-photo__row .btn { flex: 1 1 100%; }
+  .app-item__edit-actions { width: 100%; }
+  .app-item__edit-actions .btn { flex: 1; }
   .app-field, .app-item__edit .app-field { flex: 1 1 100%; width: 100%; }
   .app-field input { width: 100%; min-width: 0; }
   .app-item { padding: var(--s2); }

@@ -14,10 +14,23 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 from bot.formatting import (
     HELP_TEXT,
     LINK_MESSAGES,
+    LOGIN_BUTTON_CANCEL,
+    LOGIN_BUTTON_CONFIRM,
+    LOGIN_CALLBACK_MESSAGES,
+    LOGIN_MESSAGES,
     PHOTO_TEXTS,
     WELCOME_TEXT,
     days_left_text,
     format_products,
+    login_confirm_text,
+)
+from core.bot_login import (
+    START_PREFIX,
+    ConfirmStatus,
+    cancel_login_by_id,
+    confirm_login_by_id,
+    inspect_login_code,
+    is_login_code,
 )
 from core.database import SessionFactory
 from core.label_service import analyze_label
@@ -25,8 +38,8 @@ from core.linking import LinkStatus, consume_link_token
 from core.notifications import TZ
 from core.ocr import OcrError
 from core.products import find_products_by_name, list_user_products, products_expiring_within
-from core.users import get_or_create_user
-from models import Product
+from core.users import get_or_create_user, mark_bot_started
+from models import Product, utcnow
 
 router = Router()
 
@@ -53,23 +66,91 @@ def parse_add_args(text: str) -> tuple[str, date | None] | None:
         return None
 
 
+def _login_keyboard(login_code_id: int) -> InlineKeyboardMarkup:
+    # В callback_data только id строки (короткий), сам код в Telegram не уходит
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text=LOGIN_BUTTON_CONFIRM, callback_data=f"login:ok:{login_code_id}"),
+                InlineKeyboardButton(text=LOGIN_BUTTON_CANCEL, callback_data=f"login:no:{login_code_id}"),
+            ]
+        ]
+    )
+
+
 @router.message(CommandStart())
 async def cmd_start(message: Message, command: CommandObject) -> None:
-    """Регистрирует пользователя; при /start <token> связывает аккаунт с сайтом."""
+    """Регистрирует пользователя; при /start <token> связывает аккаунт с сайтом.
+
+    /start login_<code> НЕ подтверждает вход: показывает запрос с кнопками.
+    Привязка делается только в on_login_callback (кнопка «Подтвердить»).
+    """
     telegram_id = message.from_user.id
+
+    if command.args and command.args.startswith(START_PREFIX) and is_login_code(
+        command.args[len(START_PREFIX):].strip()
+    ):
+        code = command.args[len(START_PREFIX):].strip()
+        async with SessionFactory() as session:
+            status, row = await inspect_login_code(session, code)
+            # Значения берём до commit в get_or_create_user: после него строка может быть недоступна
+            login_id = row.id if row is not None else None
+            created_at = row.created_at if row is not None else None
+            await mark_bot_started(session, telegram_id)
+
+        if status is ConfirmStatus.PENDING and login_id is not None:
+            await message.answer(
+                login_confirm_text(created_at or utcnow()),
+                reply_markup=_login_keyboard(login_id),
+            )
+            return
+        await message.answer(LOGIN_MESSAGES[status.value])
+        return
 
     async with SessionFactory() as session:
         # Сначала связывание: иначе запись, созданная get_or_create_user, сама займёт telegram_id
         if command.args:
             status = await consume_link_token(session, command.args.strip(), telegram_id)
-            await get_or_create_user(session, telegram_id)
+            await mark_bot_started(session, telegram_id)
             await message.answer(LINK_MESSAGES[status.value])
             return
 
-        await get_or_create_user(session, telegram_id)
+        await mark_bot_started(session, telegram_id)
 
     name = html.escape(message.from_user.first_name or "друг")
     await message.answer(WELCOME_TEXT.format(name=name))
+
+
+@router.callback_query(F.data.startswith("login:"))
+async def on_login_callback(callback: CallbackQuery) -> None:
+    """Кнопки «Подтвердить» (login:ok:<id>) и «Отмена» (login:no:<id>) под запросом входа."""
+    parts = (callback.data or "").split(":")
+    if len(parts) != 3 or parts[1] not in ("ok", "no") or not parts[2].isdigit():
+        await callback.answer()
+        return
+    login_id = int(parts[2])
+
+    async with SessionFactory() as session:
+        if parts[1] == "ok":
+            # telegram_id берётся только из callback: чужой код привязать нельзя
+            status = await confirm_login_by_id(session, login_id, callback.from_user.id)
+            if status is ConfirmStatus.OK:
+                # Подтверждение кнопкой тоже считается открытием бота
+                await mark_bot_started(session, callback.from_user.id)
+        else:
+            status = await cancel_login_by_id(session, login_id)
+
+    if status is ConfirmStatus.OK:
+        text = LOGIN_MESSAGES["ok"]
+    elif status is ConfirmStatus.CANCELLED:
+        text = LOGIN_CALLBACK_MESSAGES["cancelled"]
+    else:
+        text = LOGIN_MESSAGES.get(status.value, LOGIN_MESSAGES["invalid"])
+
+    await callback.answer()
+    if callback.message is not None:
+        await callback.message.edit_reply_markup(reply_markup=None)
+        await callback.message.answer(text)
 
 
 @router.message(Command("help"))

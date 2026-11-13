@@ -39,7 +39,7 @@
         </svg>
         <span>{{ t.brand }}</span>
       </a>
-      <nav class="nav__links" aria-label="Main">
+      <nav class="nav__links" aria-label="{{ t.nav_label_main }}">
         {% set home = "" if request.url.path == "/" else "/" %}
         <a href="{{ home }}#problems">{{ t.problems_eyebrow }}</a>
         <a href="{{ home }}#steps">{{ t.steps_eyebrow }}</a>
@@ -48,7 +48,7 @@
       </nav>
       <div class="nav__actions">
         <a class="lang-switch" href="{{ request.url.include_query_params(lang=other_lang) }}" hreflang="{{ other_lang }}">{{ t.lang_switch }}</a>
-        <a class="btn btn--primary btn--small" href="{{ app_url }}"><span>{{ t.nav_open }}</span></a>
+        <a class="btn btn--primary btn--small" href="{{ app_url }}" aria-label="{{ t.nav_open }}"><span class="nav-open__full">{{ t.nav_open }}</span><span class="nav-open__short">{{ t.nav_open_short }}</span></a>
         <button class="theme-toggle" type="button" aria-label="{{ t.theme_label }}" title="{{ t.theme_label }}">
           <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
             <circle cx="12" cy="12" r="4"/>

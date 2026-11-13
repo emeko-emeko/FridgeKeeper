@@ -14,10 +14,13 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var notice = $("notice"), list = $("list"), empty = $("empty");
-  var photo = $("photo"), photoBtn = $("photo-btn");
+  var gate = $("gate"), main = $("main"), gateCheck = $("gate-check");
   var review = $("review"), reviewName = $("review-name"), reviewDate = $("review-date");
   var reviewWarn = $("review-warn"), reviewHint = $("review-hint");
   var reviewYes = $("review-yes"), reviewNo = $("review-no");
+  var addForm = $("add-form"), addSubmit = $("add-submit");
+  var photoInputs = [$("photo-camera"), $("photo-file")];
+  var photoButtons = [$("photo-camera-btn"), $("photo-file-btn")];
   var suggested = { name: "", expiry: null };
 
   // Подписи полей берём из разметки, чтобы не дублировать тексты.
@@ -32,20 +35,36 @@
     notice.classList.toggle("is-error", !!isError);
   }
 
+  // Запрос. Сетевая ошибка и 401 показываются здесь же; такие исключения помечены handled.
   async function api(path, options) {
     var r;
     try {
       r = await fetch(path, Object.assign({ credentials: "same-origin" }, options || {}));
     } catch (e) {
       say(tr("network"), true);
+      e.handled = true;
       throw e;
     }
     if (r.status === 401) {
       say(tr("session_ended"), true);
       setTimeout(function () { location.href = "/login"; }, 1200);
-      throw new Error("401");
+      var err = new Error("401");
+      err.handled = true;
+      throw err;
     }
     return r;
+  }
+
+  // Выполняет действие, пока нужные кнопки заблокированы. Любая ошибка даёт сообщение, а не тихое молчание.
+  async function locked(buttons, action) {
+    buttons.forEach(function (b) { if (b) b.disabled = true; });
+    try {
+      await action();
+    } catch (e) {
+      if (!e || !e.handled) say(tr("network"), true);
+    } finally {
+      buttons.forEach(function (b) { if (b) b.disabled = false; });
+    }
   }
 
   // Срок: дедлайн в 00:00 следующего дня по Asia/Almaty (UTC+5, без перехода на летнее время).
@@ -88,7 +107,7 @@
   function button(label, cls, handler) {
     var b = el("button", cls, label);
     b.type = "button";
-    b.addEventListener("click", handler);
+    b.addEventListener("click", function () { handler(b); });
     return b;
   }
 
@@ -103,15 +122,15 @@
     var d = describe(p.expiry_date);
     var li = el("li", "app-item app-item--" + d.level);
 
-    var main = el("div", "app-item__main");
-    main.appendChild(el("p", "app-item__name", p.name));
+    var body = el("div", "app-item__main");
+    body.appendChild(el("p", "app-item__name", p.name));
     var meta = d.text + (p.expiry_date ? " · " + tr("until", { date: formatDate(p.expiry_date) }) : "");
-    main.appendChild(el("p", "app-item__meta", meta));
-    li.appendChild(main);
+    body.appendChild(el("p", "app-item__meta", meta));
+    li.appendChild(body);
 
     var buttons = el("div", "app-item__buttons");
     buttons.appendChild(button(tr("edit"), "app-link", function () { startEdit(li, p); }));
-    buttons.appendChild(button(tr("delete"), "app-link app-link--danger", function () { remove(p); }));
+    buttons.appendChild(button(tr("delete"), "app-link app-link--danger", function (b) { remove(p, b); }));
     li.appendChild(buttons);
     return li;
   }
@@ -126,29 +145,38 @@
     var box = el("div", "app-item__edit");
     box.appendChild(field(LABEL_NAME, name, true));
     box.appendChild(field(LABEL_DATE, date, false));
-    box.appendChild(button(tr("save"), "btn btn--primary btn--small", async function () {
+    var actions = el("div", "app-item__edit-actions");
+    var cancel = button(tr("cancel"), "btn btn--ghost btn--small", function () { load(); });
+    var save = button(tr("save"), "btn btn--primary btn--small", function () {
       var value = name.value.trim();
       if (!value) { say(tr("name_required"), true); name.focus(); return; }
-      var r = await api("/products/" + p.id, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: value, expiry_date: date.value || null, expiry_source: "manual" }),
+      locked([save, cancel], async function () {
+        var r = await api("/products/" + p.id, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: value, expiry_date: date.value || null, expiry_source: "manual" }),
+        });
+        if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
+        say("");
+        await load();
       });
-      if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
-      say("");
-      load();
-    }));
-    box.appendChild(button(tr("cancel"), "btn btn--ghost btn--small", load));
+    });
+    actions.appendChild(save);
+    actions.appendChild(cancel);
+    box.appendChild(actions);
     li.appendChild(box);
     name.focus();
   }
 
-  async function remove(p) {
+  function remove(p, btn) {
     if (!window.confirm(tr("confirm_delete", { name: p.name }))) return;
-    var r = await api("/products/" + p.id, { method: "DELETE" });
-    if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
-    say("");
-    load();
+    var siblings = btn && btn.parentNode ? Array.prototype.slice.call(btn.parentNode.children) : [btn];
+    return locked(siblings, async function () {
+      var r = await api("/products/" + p.id, { method: "DELETE" });
+      if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
+      say("");
+      await load();
+    });
   }
 
   function sortKey(p) {
@@ -157,9 +185,10 @@
 
   async function load() {
     var r;
-    try { r = await api("/products"); } catch (e) { return; }
+    try { r = await api("/products"); } catch (e) { if (!e.handled) say(tr("network"), true); return; }
     if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
-    var items = await r.json();
+    var items;
+    try { items = await r.json(); } catch (e) { say(tr("network"), true); return; }
     items.sort(function (a, b) { return sortKey(a) - sortKey(b); });
     list.textContent = "";
     items.forEach(function (p) { list.appendChild(renderItem(p)); });
@@ -167,22 +196,24 @@
   }
 
   // Добавление вручную
-  $("add-form").addEventListener("submit", async function (e) {
+  addForm.addEventListener("submit", function (e) {
     e.preventDefault();
     var name = $("add-name").value.trim();
     if (!name) { say(tr("name_required"), true); return; }
-    var r = await api("/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name, expiry_date: $("add-date").value || null, expiry_source: "manual" }),
+    locked([addSubmit], async function () {
+      var r = await api("/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name, expiry_date: $("add-date").value || null, expiry_source: "manual" }),
+      });
+      if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
+      say(tr("saved", { name: name }));
+      addForm.reset();
+      await load();
     });
-    if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
-    say(tr("saved", { name: name }));
-    $("add-form").reset();
-    load();
   });
 
-  // Фото
+  // Фото: две кнопки (камера и файл) ведут в один обработчик
   function resetReview() {
     review.hidden = true;
     reviewWarn.hidden = true;
@@ -190,20 +221,20 @@
     reviewName.value = "";
     reviewDate.value = "";
     suggested = { name: "", expiry: null };
-    photo.value = "";
+    photoInputs.forEach(function (i) { i.value = ""; });
   }
 
-  photoBtn.addEventListener("click", function () { photo.click(); });
+  photoButtons[0].addEventListener("click", function () { photoInputs[0].click(); });
+  photoButtons[1].addEventListener("click", function () { photoInputs[1].click(); });
 
-  photo.addEventListener("change", async function () {
-    var file = photo.files && photo.files[0];
+  function handlePhoto(input) {
+    var file = input.files && input.files[0];
     if (!file) return;
     resetReview();
     say(tr("scanning"));
-    photoBtn.disabled = true;
     var form = new FormData();
     form.append("file", file);
-    try {
+    locked(photoButtons, async function () {
       var r = await api("/products/scan", { method: "POST", body: form });
       if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
       var data = await r.json();
@@ -215,28 +246,30 @@
       reviewHint.textContent = suggested.name ? tr("scan_ok") : tr("scan_noname");
       review.hidden = false;
       say("");
-    } catch (err) {
-      /* сообщение уже показано в api() */
-    } finally {
-      photoBtn.disabled = false;
-    }
+      reviewName.focus();
+    });
+  }
+  photoInputs.forEach(function (input) {
+    input.addEventListener("change", function () { handlePhoto(input); });
   });
 
-  review.addEventListener("submit", async function (e) {
+  review.addEventListener("submit", function (e) {
     e.preventDefault();
     var name = reviewName.value.trim();
     if (!name) { reviewHint.textContent = tr("name_required"); return; }
     // Источник «ocr», только если пользователь не менял предложенные значения.
     var unchanged = name === suggested.name && (reviewDate.value || null) === suggested.expiry;
-    var r = await api("/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name, expiry_date: reviewDate.value || null, expiry_source: unchanged ? "ocr" : "manual" }),
+    locked([reviewYes, reviewNo], async function () {
+      var r = await api("/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name, expiry_date: reviewDate.value || null, expiry_source: unchanged ? "ocr" : "manual" }),
+      });
+      if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
+      resetReview();
+      say(tr("saved", { name: name }));
+      await load();
     });
-    if (!r.ok) { say(tr("error", { code: r.status }), true); return; }
-    resetReview();
-    say(tr("saved", { name: name }));
-    load();
   });
 
   reviewNo.addEventListener("click", function () {
@@ -254,6 +287,41 @@
     location.href = "/login";
   });
 
+  // Блокировка без /start: пока бот не запущен, форму и список не показываем и продукты не запрашиваем.
+  // Если поля bot_started в ответе нет вовсе, считаем, что бот запущен.
+  async function botStarted() {
+    var r = await api("/auth/me");
+    if (!r.ok) return true;
+    var data = await r.json();
+    return data.bot_started !== false;
+  }
+
+  function showApp() {
+    gate.hidden = true;
+    document.getElementById("head-bot").hidden = false;
+    main.hidden = false;
+    say(tr("loading"));
+    return load().then(function () { if (notice.textContent === tr("loading")) say(""); });
+  }
+
+  function showGate() {
+    main.hidden = true;
+    document.getElementById("head-bot").hidden = true;
+    gate.hidden = false;
+    say("");
+  }
+
+  gateCheck.addEventListener("click", function () {
+    locked([gateCheck], async function () {
+      if (await botStarted()) { await showApp(); } else { say(tr("gate_still"), true); }
+    });
+  });
+
   say(tr("loading"));
-  load().then(function () { if (notice.textContent === tr("loading")) say(""); });
+  botStarted().then(function (ok) {
+    return ok ? showApp() : showGate();
+  }).catch(function (e) {
+    // Сеть недоступна: сообщение уже показано в api(). 401 ведёт на /login.
+    if (!e || !e.handled) say(tr("network"), true);
+  });
 })();

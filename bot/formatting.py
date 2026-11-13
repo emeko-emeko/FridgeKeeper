@@ -3,7 +3,7 @@
 import html
 import math
 from collections.abc import Sequence
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from core.notifications import TZ, deadline_for
 from models import Product
@@ -51,6 +51,32 @@ LINK_MESSAGES = {
         "к другому пользователю."
     ),
 }
+
+
+LOGIN_MESSAGES = {
+    "ok": "Вход подтверждён, вернитесь на сайт.",
+    "invalid": "Ссылка для входа недействительна. Начните вход на сайте заново.",
+    "expired": "Срок ссылки для входа истёк (5 минут). Начните вход на сайте заново.",
+    "used": "Этот вход уже использован или отменён. Ничего не изменено. Начните вход на сайте заново.",
+}
+
+LOGIN_CALLBACK_MESSAGES = {
+    "cancelled": "Вход отменён. Код на сайте больше не работает.",
+}
+
+LOGIN_CONFIRM_TEXT = (
+    "Подтвердить вход на сайт FridgeKeeper?\n\n"
+    "Запрос пришёл: <b>{time}</b> (время Астаны).\n"
+    "Если вы не начинали вход, нажмите «Отмена» и не отправляйте код никому."
+)
+LOGIN_BUTTON_CONFIRM = "Подтвердить"
+LOGIN_BUTTON_CANCEL = "Отмена"
+
+
+def login_confirm_text(created_at: datetime) -> str:
+    """Текст запроса входа. created_at хранится в UTC без tzinfo, показываем по Астане."""
+    local = created_at.replace(tzinfo=UTC).astimezone(TZ)
+    return LOGIN_CONFIRM_TEXT.format(time=local.strftime("%d.%m.%Y %H:%M"))
 
 
 def format_products(products: Sequence[Product], now: datetime | None = None) -> str:

@@ -10,11 +10,25 @@
     </svg>
     <h1>{{ t.login_title }}</h1>
     <p>{{ t.login_hint }}</p>
-    <a class="btn btn--primary tg-login" href="{{ telegram_url }}" rel="nofollow">
+
+    <button class="btn btn--primary login__bot" id="bot-login" type="button">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9.8 15.2l-.4 4.2c.6 0 .8-.3 1.1-.6l2.6-2.5 5.4 3.9c1 .5 1.7.3 1.9-.9l3.5-16.4c.3-1.5-.5-2.1-1.5-1.7L1.6 9.6c-1.4.6-1.4 1.4-.3 1.7l5.4 1.7L19.7 5c.6-.4 1.2-.2.7.2z"/></svg>
-      <span>{{ t.login_button }}</span>
-    </a>
+      <span>{{ t.login_bot_button }}</span>
+    </button>
+
+    <div id="bot-wait" class="login__wait" hidden>
+      <p class="login__wait-text">{{ t.login_bot_wait }}</p>
+      <a id="bot-open" class="btn btn--ghost btn--small" href="{{ bot_url }}" target="_blank" rel="noopener">{{ t.app_bot }}</a>
+    </div>
+    <p id="login-msg" class="login__msg" role="status" aria-live="polite" hidden></p>
+
+    <div class="login__alt">
+      <span class="login__alt-label">{{ t.login_other }}</span>
+      <a class="btn btn--primary tg-login" href="{{ telegram_url }}" rel="nofollow">{{ t.login_button }}</a>
+    </div>
+
     <a class="btn btn--link login__back" href="/?lang={{ lang }}">{{ t.login_back }}</a>
   </div>
 </main>
+<script src="{{ url_for('static', path='js/login.js') }}" defer></script>
 {% endblock %}

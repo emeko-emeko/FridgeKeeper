@@ -21,7 +21,9 @@ def _check_string(fields: dict[str, str]) -> str:
 
 
 def verify_login_widget(fields: dict[str, str]) -> int:
-    """Проверяет данные из Telegram Login Widget и возвращает telegram_id.
+    """НЕ УДАЛЯТЬ: запасной вход через Telegram Login Widget (решение пользователя 13.11.2026).
+
+    Проверяет данные из Telegram Login Widget и возвращает telegram_id.
 
     Ключ подписи — SHA-256 от токена бота.
     """

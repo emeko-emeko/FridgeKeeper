@@ -121,14 +121,15 @@ button { font: inherit; }
 }
 .nav.is-scrolled { border-bottom-color: var(--line); }
 .nav__inner { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); height: 68px; }
-.nav__brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 17px; font-weight: 500; letter-spacing: 0; }
+.nav__brand { flex: none; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 17px; font-weight: 500; letter-spacing: 0; }
 .nav__brand .logo { color: var(--accent); }
 .nav__links { display: flex; gap: var(--s2); }
 .nav__links a { position: relative; font-size: 14px; color: var(--ink-2); text-decoration: none; padding: 8px 4px; }
 .nav__links a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 160ms var(--ease); }
 .nav__links a:hover { color: var(--ink); }
 .nav__links a:hover::after { transform: scaleX(1); }
-.nav__actions { display: flex; align-items: center; gap: var(--s2); }
+.nav__actions { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+.nav-open__short { display: none; }
 .lang-switch { font-size: 14px; color: var(--ink-2); text-decoration: none; transition: color 160ms var(--ease); }
 .lang-switch:hover { color: var(--ink); }
 
@@ -146,7 +147,7 @@ button { font: inherit; }
   transition: transform 160ms var(--ease), background-color 160ms var(--ease), border-color 160ms var(--ease);
 }
 .theme-toggle:hover { border-color: var(--ink-3); }
-.theme-toggle:active { transform: scale(0.96); }
+.theme-toggle:active { transform: scale(0.97); }
 .theme-toggle .icon { position: absolute; width: 18px; height: 18px; transition: transform 180ms var(--ease), opacity 180ms var(--ease); }
 .theme-toggle .icon-moon { opacity: 0; transform: rotate(-90deg) scale(0.4); }
 :root[data-theme="dark"] .theme-toggle .icon-sun { opacity: 0; transform: rotate(90deg) scale(0.4); }
@@ -188,7 +189,7 @@ button { font: inherit; }
   font-family: var(--font-display);
   font-size: clamp(2rem, 3.4vw, 2.625rem);
   line-height: 1.2;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
   max-width: 20ch;
 }
 .section__lead { margin-top: var(--s2); font-size: 18px; color: var(--ink-2); max-width: 50ch; }
@@ -299,9 +300,9 @@ html.lenis, html.lenis body { height: auto; }
 .preview__panel.is-on { display: grid; justify-items: center; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .shot { display: block; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 0 0 1px var(--line-strong), 0 20px 40px -20px rgba(43, 34, 30, 0.4); }
-.shot--phone { max-width: 250px; border-radius: 24px; }
+.shot--phone { max-width: 248px; border-radius: 24px; }
 @media (max-width: 599px) {
-  .shot { max-width: 250px; border-radius: 24px; }
+  .shot { max-width: 248px; border-radius: 24px; }
 }
 
 /* Чат Telegram: настоящие тексты бота */
@@ -372,9 +373,19 @@ html.lenis, html.lenis body { height: auto; }
 }
 @media (max-width: 599px) {
   .container { padding: 0 var(--s2); }
+  /* Шапка в одну строку: короткая подпись кнопки, меньше зазоры */
+  .nav__inner { gap: var(--s1); height: 60px; }
+  .nav__actions { gap: var(--s1); }
+  .nav-open__full { display: none; }
+  .nav-open__short { display: inline; }
+  .nav .btn--small { padding: 0 12px; }
   .hero { padding: var(--s5) 0 var(--s5); }
   .section { padding: var(--s5) 0; }
   .final { padding: var(--s4) var(--s3); }
+}
+/* Совсем узкие экраны: у логотипа остаётся значок, название есть в aria-label */
+@media (max-width: 359px) {
+  .nav__brand span { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -461,7 +472,21 @@ html.lenis, html.lenis body { height: auto; }
   box-shadow: var(--shadow-soft);
 }
 .login__logo { color: var(--accent); margin-bottom: var(--s1); }
-.login h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 5vw, 2.25rem); line-height: 1.2; letter-spacing: -0.015em; }
+.login h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 5vw, 2.25rem); line-height: 1.2; letter-spacing: 0; }
 .login p { color: var(--ink-2); }
 .tg-login { min-height: 52px; margin-top: var(--s3); padding: 0 28px; gap: 12px; }
 .login__back { height: 40px; font-size: 14px; }
+.login__wait { display: grid; justify-items: center; gap: var(--s1); margin-top: var(--s2); }
+.login__wait[hidden], .login__msg[hidden] { display: none; }
+.login__wait-text { color: var(--ink); font-weight: 500; }
+.login__msg { margin-top: var(--s1); font-size: 14px; }
+.login__msg.is-error { color: var(--accent); font-weight: 500; }
+.login__alt { display: grid; justify-items: center; gap: var(--s1); margin-top: var(--s3); padding-top: var(--s3); width: 100%; border-top: 1px solid var(--line); }
+.login__alt-label { font-size: 14px; color: var(--ink-3); }
+.login .btn:disabled { opacity: 0.6; cursor: default; }
+.login__bot { min-height: 52px; margin-top: var(--s3); padding: 0 28px; gap: 12px; }
+/* Старая кнопка входа через Telegram: вторичная. Класс tg-login остаётся ради теста и ссылок на неё. */
+.login .login__alt a.tg-login.btn.btn--primary { min-height: 40px; height: 40px; margin-top: 0; padding: 0 16px; gap: 8px; font-size: 14px; background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
+.login .login__alt a.tg-login.btn.btn--primary:hover { background: var(--surface); border-color: var(--ink); }
+/* Телефон не выходит за край экрана на средних ширинах */
+@media (min-width: 600px) and (max-width: 899px) { .hero__phone { right: 0; } }
