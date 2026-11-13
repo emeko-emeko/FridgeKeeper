@@ -96,7 +96,7 @@
 
         <article class="how__card reveal">
           <div class="how__demo" aria-hidden="true">
-            <div class="tg"><span class="tg__avatar"></span>FridgeKeeper</div>
+            <div class="tg"><img class="tg__avatar" src="{{ url_for('static', path='img/bot-avatar.jpg') }}" width="24" height="24" alt="" decoding="async">FridgeKeeper</div>
             <p class="tg__msg">{{ t.chat_remind }}</p>
           </div>
           <span class="how__num">03</span>
@@ -135,7 +135,7 @@
         </div>
         <div class="preview__panel" data-fp="3">
           <div class="chat">
-            <div class="chat__head"><span class="chat__avatar"></span>FridgeKeeper</div>
+            <div class="chat__head"><img class="chat__avatar" src="{{ url_for('static', path='img/bot-avatar.jpg') }}" width="28" height="28" alt="" decoding="async">FridgeKeeper</div>
             <p class="bubble bubble--me">{{ t.chat_cmd }}</p>
             <p class="bubble">{{ t.chat_added }}</p>
             <p class="bubble">{{ t.chat_remind }}</p>

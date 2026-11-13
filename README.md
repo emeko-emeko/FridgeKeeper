@@ -176,7 +176,7 @@ TEST_DATABASE_URL="sqlite+aiosqlite:///./test.db" uv run pytest -q
 
 Если `pytest-asyncio` не установлен, добавьте его: `uv pip install pytest-asyncio`. В `pyproject.toml` его пока нет, а `requirements.txt` содержит.
 
-Последний прогон: 66 тестов, все прошли (на SQLite).
+Последний прогон: 67 тестов, все прошли (на SQLite).
 
 ## Развёртывание на Vercel
 
