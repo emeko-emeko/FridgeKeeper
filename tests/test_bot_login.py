@@ -273,6 +273,18 @@ async def test_empty_and_malformed_codes_are_400(factory):
 
 
 @pytest.mark.asyncio
+async def test_overlong_code_is_400_same_as_wrong(factory, monkeypatch):
+    """Код длиннее 32 символов (33 и 10000) даёт тот же ответ 400, что и неверный код, без cookie и без 422."""
+    code = await _login_command(monkeypatch, factory, 4590)
+    client = TestClient(app)
+    for bad in [code + "A", "A" * 33, "A" * 10000]:
+        response = _verify(client, bad)
+        assert response.status_code == 400, len(bad)
+        assert response.json() == {"detail": VERIFY_ERROR}, len(bad)
+        assert "set-cookie" not in response.headers, len(bad)
+
+
+@pytest.mark.asyncio
 async def test_empty_code_field_is_400(factory):
     response = TestClient(app).post("/auth/bot-login/verify", json={"code": ""})
     assert response.status_code == 400

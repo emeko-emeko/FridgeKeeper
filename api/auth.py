@@ -164,7 +164,11 @@ async def me(
     return {"user_id": user_id, "bot_started": user is not None and user.bot_started_at is not None}
 
 
+MAX_BOT_CODE_LENGTH = 32
+
+
 class BotLoginVerify(BaseModel):
+    # Длину не ограничиваем в схеме: иначе FastAPI вернёт 422, а не общий ответ 400 (см. обработчик).
     code: str = ""
 
 
@@ -172,8 +176,10 @@ class BotLoginVerify(BaseModel):
 async def bot_login_verify(body: BotLoginVerify, session: AsyncSession = Depends(get_session)):
     """Код из бота, введённый на сайте. При успехе ставит cookie сессии.
 
-    Все причины отказа (неверный, истёкший, использованный, пустой код) дают один и тот же ответ 400.
+    Все причины отказа (неверный, истёкший, использованный, пустой, слишком длинный код) дают один и тот же ответ 400.
     """
+    if len(body.code) > MAX_BOT_CODE_LENGTH:
+        raise HTTPException(status_code=400, detail="Код не подошёл или истёк")
     user_id = await verify_bot_code(session, body.code)
     if user_id is None:
         raise HTTPException(status_code=400, detail="Код не подошёл или истёк")
