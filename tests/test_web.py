@@ -161,6 +161,59 @@ def test_login_with_public_base_url_returns_to_it(monkeypatch):
     assert query["return_to"][0].startswith(public + "/auth/login-widget")
 
 
+def test_login_widget_without_params_serves_bridge_page():
+    response = TestClient(app).get("/auth/login-widget")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "tgAuthResult" in response.text
+    assert response.headers["cache-control"] == "no-store"
+
+
+def _signed_login_fields(token: str) -> dict[str, str]:
+    import hashlib
+    import hmac
+    import time
+
+    from core.telegram_auth import _check_string
+
+    fields = {"id": "42", "first_name": "Тест", "auth_date": str(int(time.time()))}
+    secret = hashlib.sha256(token.encode()).digest()
+    fields["hash"] = hmac.new(secret, _check_string(fields).encode(), hashlib.sha256).hexdigest()
+    return fields
+
+
+def test_login_widget_with_valid_signature_sets_session(monkeypatch):
+    import api.auth as auth_module
+    import core.telegram_auth as tg_module
+    from urllib.parse import urlencode
+
+    monkeypatch.setattr(tg_module, "TELEGRAM_TOKEN", "123:TEST")
+
+    class FakeUser:
+        id = 7
+
+    async def fake_get_or_create_user(session, telegram_id):
+        assert telegram_id == 42
+        return FakeUser()
+
+    monkeypatch.setattr(auth_module, "get_or_create_user", fake_get_or_create_user)
+    query = urlencode(_signed_login_fields("123:TEST"))
+    response = TestClient(app).get(f"/auth/login-widget?{query}", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/app"
+    assert "fk_session=" in response.headers.get("set-cookie", "")
+
+
+def test_login_widget_with_bad_signature_is_rejected(monkeypatch):
+    import core.telegram_auth as tg_module
+    from urllib.parse import urlencode
+
+    monkeypatch.setattr(tg_module, "TELEGRAM_TOKEN", "123:TEST")
+    query = urlencode(_signed_login_fields("999:OTHER"))
+    response = TestClient(app).get(f"/auth/login-widget?{query}", follow_redirects=False)
+    assert response.status_code == 400
+
+
 def _hero_pieces(lang: str) -> list[str]:
     t = TEXTS[lang]
     return [t["hero_title_pre"], t["hero_title_hl"], t["hero_title_post"]]

@@ -5,9 +5,10 @@ import hashlib
 import hmac
 import json
 import time
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +22,7 @@ router = APIRouter(prefix="/auth")
 
 SESSION_COOKIE = "fk_session"
 SESSION_TTL_SECONDS = 30 * 24 * 3600
+LOGIN_BRIDGE_PATH = Path(__file__).resolve().parent.parent / "templates" / "login_bridge.html"
 
 
 def make_session_token(user_id: int, now: float | None = None) -> str:
@@ -56,7 +58,16 @@ async def get_session() -> AsyncSession:
 
 @router.get("/login-widget")
 async def login_widget_callback(request: Request, session: AsyncSession = Depends(get_session)):
-    """Telegram Login Widget перенаправляет сюда с параметрами пользователя."""
+    """Telegram Login Widget перенаправляет сюда с параметрами пользователя.
+
+    Новый вариант Telegram отдаёт данные во фрагменте адреса (#tgAuthResult=…), который сервер не видит.
+    Без параметра hash отдаём страницу-мост: она переносит данные в параметры и вызывает этот же адрес.
+    """
+    if "hash" not in request.query_params:
+        return HTMLResponse(
+            LOGIN_BRIDGE_PATH.read_text(encoding="utf-8"),
+            headers={"Cache-Control": "no-store"},
+        )
     fields = dict(request.query_params)
     try:
         telegram_id = verify_login_widget(fields)

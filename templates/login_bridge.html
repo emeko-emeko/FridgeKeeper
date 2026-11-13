@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Вход</title>
+  <style>
+    /* Цвета совпадают с токенами static/css/landing.css (--bg, --ink, --accent). */
+    :root { --bg: #f6f0e4; --ink: #2b221e; --accent: #b84b34; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) { --bg: #1d1814; --ink: #f2e9da; --accent: #ef7a5b; }
+    }
+    :root[data-theme="dark"] { --bg: #1d1814; --ink: #f2e9da; --accent: #ef7a5b; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif; background: var(--bg); color: var(--ink); }
+    main { max-width: 420px; padding: 24px; text-align: center; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <p id="msg">Проверяем вход через Telegram…</p>
+    <p><a href="/login">Вернуться ко входу</a></p>
+  </main>
+  <script>
+    // Telegram возвращает данные во фрагменте адреса (#tgAuthResult=base64 JSON).
+    // Браузер не отправляет фрагмент на сервер, поэтому переносим поля в обычные параметры.
+    (function () {
+      var msg = document.getElementById("msg");
+      function fail(text) { msg.textContent = text; }
+
+      var match = (window.location.hash || "").match(/tgAuthResult=([^&]+)/);
+      if (!match) {
+        fail("Telegram не передал данные входа. Вернитесь ко входу и попробуйте снова.");
+        return;
+      }
+
+      var data;
+      try {
+        var b64 = match[1].replace(/-/g, "+").replace(/_/g, "/");
+        while (b64.length % 4) { b64 += "="; }
+        var bytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
+        data = JSON.parse(new TextDecoder().decode(bytes));
+      } catch (e) {
+        fail("Не удалось прочитать ответ Telegram. Попробуйте войти снова.");
+        return;
+      }
+
+      if (!data || typeof data !== "object") {
+        fail("Вход в Telegram не подтверждён. Попробуйте снова и нажмите «Accept».");
+        return;
+      }
+
+      var params = new URLSearchParams();
+      Object.keys(data).forEach(function (key) { params.set(key, String(data[key])); });
+      window.location.replace("/auth/login-widget?" + params.toString());
+    })();
+  </script>
+</body>
+</html>
